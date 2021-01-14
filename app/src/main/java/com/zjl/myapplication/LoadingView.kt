@@ -62,27 +62,33 @@ class LoadingView : View {
     constructor(context: Context, attributeSet: AttributeSet) : this(context, attributeSet, 0)
 
     constructor(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) : super(
-        context,
-        attributeSet,
-        defStyleAttr
+            context,
+            attributeSet,
+            defStyleAttr
     ) {
         if (attributeSet == null) return
         val typeArrays = context.obtainStyledAttributes(attributeSet, R.styleable.LoadingView)
         pic = typeArrays.getDrawable(R.styleable.LoadingView_img)
         typeArrays.recycle()
+        mBitmap = pic!!.toBitmap()
+        mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         Thread {
-            while (progress < 100) {
-                mHandler.sendEmptyMessage(0)
-                Thread.sleep(10)
-            }
-            isLoading = false
             while (true) {
-                mHandler.sendEmptyMessage(0)
-                Thread.sleep(10)
+                if (progress < 100) {
+
+                    isLoading = true
+                    mHandler.sendEmptyMessage(0)
+                    Thread.sleep(10)
+                }
+                if (progress == 100) {
+                    isLoading = false
+                    mHandler.sendEmptyMessage(0)
+                    Thread.sleep(10)
+                }
             }
         }.start()
     }
@@ -120,12 +126,13 @@ class LoadingView : View {
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         initParam()
+
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas!!.translate((width / 2).toFloat(), (height / 2).toFloat())
         initPaint()
+        canvas!!.translate((width / 2).toFloat(), (height / 2).toFloat())
         drawCircles(canvas)
         drawLines(canvas)
         if (isLoading == false) {
@@ -143,13 +150,24 @@ class LoadingView : View {
     }
 
     fun setProgress(progress: Int) {
-        this.progress = progress
+        if (progress in 0..100) {
+            this.progress = progress
+        }
+        if (progress == 0) {
+            resetAlpha()
+        }
     }
 
     fun setLogo(logo: Drawable) {
         this.pic = logo
         mBitmap = pic!!.toBitmap()
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+    }
+
+    private fun resetAlpha() {
+        alphaStep1 = 0
+        alphaStep2 = 0
+        alphaStep3 = 0
     }
 
     private fun initParam() {
@@ -162,25 +180,25 @@ class LoadingView : View {
             lengthArray[i] = Random().nextFloat() * mLineLength * 2
         }
         mLinearGradient = LinearGradient(
-            mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
-            intArrayOf(
-                Color.parseColor("#001DA0FF"),
-                Color.parseColor("#2C41FB"),
-                Color.parseColor("#FF26CF")
-            ),
-            floatArrayOf(0.09f, 0.62f, 0.99f),
-            Shader.TileMode.CLAMP
+                mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
+                intArrayOf(
+                        Color.parseColor("#001DA0FF"),
+                        Color.parseColor("#2C41FB"),
+                        Color.parseColor("#FF26CF")
+                ),
+                floatArrayOf(0.09f, 0.62f, 0.99f),
+                Shader.TileMode.CLAMP
         )
         mLinearGradient2 = LinearGradient(
-            mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
-            intArrayOf(
-                Color.parseColor("#1DA0FF"),
-                Color.parseColor("#2C41FB"),
-                Color.parseColor("#E547FF"),
-                Color.parseColor("#FF26CF")
-            ),
-            floatArrayOf(0.0f, 0.23f, 0.89f, 0.99f),
-            Shader.TileMode.CLAMP
+                mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
+                intArrayOf(
+                        Color.parseColor("#1DA0FF"),
+                        Color.parseColor("#2C41FB"),
+                        Color.parseColor("#E547FF"),
+                        Color.parseColor("#FF26CF")
+                ),
+                floatArrayOf(0.0f, 0.23f, 0.89f, 0.99f),
+                Shader.TileMode.CLAMP
         )
     }
 
@@ -188,14 +206,14 @@ class LoadingView : View {
         rotateAngle += arcSpeed
         canvas.rotate(rotateAngle, mCircleX, mCircleY)
         canvas.drawArc(
-            mCircleX - mOuterRadius,
-            mCircleY - mOuterRadius,
-            mCircleX + mOuterRadius,
-            mCircleY + mOuterRadius,
-            180f,
-            270f,
-            false,
-            mArcPaint
+                mCircleX - mOuterRadius,
+                mCircleY - mOuterRadius,
+                mCircleX + mOuterRadius,
+                mCircleY + mOuterRadius,
+                180f,
+                270f,
+                false,
+                mArcPaint
         )
     }
 
@@ -209,10 +227,10 @@ class LoadingView : View {
             drawColorLines(canvas)
             canvas.drawText("${progress}", mCircleX, mCircleY + 50, mTextPaint)
             canvas.drawText(
-                "%",
-                mCircleX + mTextPaint.measureText("${progress}") / 2,
-                mCircleY + 50,
-                mSmallTextPaint
+                    "%",
+                    mCircleX + mTextPaint.measureText("${progress}") / 2,
+                    mCircleY + 50,
+                    mSmallTextPaint
             )
             drawMovingArc(canvas)
         } else {
@@ -257,10 +275,10 @@ class LoadingView : View {
     private fun drawText(canvas: Canvas) {
         canvas.drawText("${progress}", mCircleX, mCircleY + 50, mTextPaint)
         canvas.drawText(
-            "%",
-            mCircleX + mTextPaint.measureText("${progress}") / 2,
-            mCircleY + 50,
-            mSmallTextPaint
+                "%",
+                mCircleX + mTextPaint.measureText("${progress}") / 2,
+                mCircleY + 50,
+                mSmallTextPaint
         )
     }
 
@@ -270,11 +288,11 @@ class LoadingView : View {
         canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
         for (i in 0..359 step 2) {
             canvas.drawLine(
-                ((mOuterRadius + dip2px(7)) * sin(2 * PI / 360 * i)).toFloat(),
-                ((mOuterRadius + dip2px(7)) * cos(2 * PI / 360 * i)).toFloat(),
-                ((lengthArray[i] + mOuterRadius + dip2px(7)) * sin(2 * PI / 360 * i)).toFloat(),
-                ((lengthArray[i] + mOuterRadius + dip2px(7)) * cos(2 * PI / 360 * i)).toFloat(),
-                mColorLinePaint
+                    ((mOuterRadius + dip2px(7)) * sin(2 * PI / 360 * i)).toFloat(),
+                    ((mOuterRadius + dip2px(7)) * cos(2 * PI / 360 * i)).toFloat(),
+                    ((lengthArray[i] + mOuterRadius + dip2px(7)) * sin(2 * PI / 360 * i)).toFloat(),
+                    ((lengthArray[i] + mOuterRadius + dip2px(7)) * cos(2 * PI / 360 * i)).toFloat(),
+                    mColorLinePaint
             )
         }
         canvas.restore()
@@ -288,11 +306,11 @@ class LoadingView : View {
     private fun drawLines(canvas: Canvas) {
         for (i in 0..359 step 2) {
             canvas.drawLine(
-                mCircleX,
-                mCircleY - mOuterRadius - dip2px(7),
-                mCircleX,
-                mCircleY - mOuterRadius - dip2px(14) - mLineLength,
-                mICPaint
+                    mCircleX,
+                    mCircleY - mOuterRadius - dip2px(7),
+                    mCircleX,
+                    mCircleY - mOuterRadius - dip2px(14) - mLineLength,
+                    mICPaint
             )
             canvas.rotate(2f, mCircleX, mCircleY)
         }
@@ -304,12 +322,14 @@ class LoadingView : View {
             style = Paint.Style.STROKE
             strokeWidth = dip2px(7)
             isAntiAlias = true
+            alpha = 255
         }
         mICPaint.apply {
             color = Color.parseColor("#282D45")
             style = Paint.Style.STROKE
             strokeWidth = dip2px(1)
             isAntiAlias = true
+            alpha = 255
         }
         mTextPaint.apply {
             color = Color.parseColor("#2C7FFB")
@@ -317,12 +337,14 @@ class LoadingView : View {
             isAntiAlias = true
             textAlign = Paint.Align.CENTER
             textSize = 150f
+            alpha = 255
         }
         mSmallTextPaint.apply {
             color = Color.parseColor("#2C7FFB")
             style = Paint.Style.FILL
             isAntiAlias = true
             textSize = 50f
+            alpha = 255
         }
         mArcPaint.apply {
             shader = mLinearGradient
@@ -330,18 +352,21 @@ class LoadingView : View {
             style = Paint.Style.STROKE
             isAntiAlias = true
             strokeCap = Paint.Cap.ROUND
+            alpha = 255
         }
         mColorCirclePaint.apply {
             shader = mLinearGradient2
             strokeWidth = dip2px(9)
             style = Paint.Style.STROKE
             isAntiAlias = true
+            alpha = 255
         }
         mColorLinePaint.apply {
             shader = mLinearGradient2
             strokeWidth = dip2px(1)
             style = Paint.Style.FILL
             isAntiAlias = true
+            alpha = 255
         }
     }
 
