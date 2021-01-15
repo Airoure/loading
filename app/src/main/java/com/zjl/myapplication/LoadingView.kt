@@ -28,7 +28,8 @@ class LoadingView : View {
     private val mSmallTextPaint: Paint = Paint()
     private val mArcPaint: Paint = Paint()
     private val mColorCirclePaint: Paint = Paint()
-    private val mColorLinePaint: Paint = Paint()
+
+    private val mMaskPaint: Paint = Paint()
     private var mOuterRadius = 0f
     private var mCircleX = 0f
     private var mCircleY = 0f
@@ -49,11 +50,11 @@ class LoadingView : View {
     private val colorLineRotate = 0.6f
     private val lengthArray = FloatArray(360)
     private val mMatrix = Matrix()
-    private var scale: Float = 0f
-    private var dx = 0
-    private var dy = 0
+    private val maskMatrix = Matrix()
     private lateinit var mBitmap: Bitmap
     private lateinit var mShader: BitmapShader
+    private val mMaskBitmap = context.getDrawable(R.drawable.img_mask)!!.toBitmap()
+    private val mMaskShader = BitmapShader(mMaskBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
     private lateinit var mLinearGradient: LinearGradient
     private lateinit var mLinearGradient2: LinearGradient
 
@@ -134,11 +135,10 @@ class LoadingView : View {
         initPaint()
         canvas!!.translate((width / 2).toFloat(), (height / 2).toFloat())
         drawCircles(canvas)
-        drawLines(canvas)
         if (isLoading == false) {
             hideAndShow(canvas)
         } else {
-            drawColorLines(canvas)
+            drawLines(canvas)
             drawText(canvas)
             drawMovingArc(canvas)
         }
@@ -168,6 +168,7 @@ class LoadingView : View {
         alphaStep1 = 0
         alphaStep2 = 0
         alphaStep3 = 0
+        isLoading = true
     }
 
     private fun initParam() {
@@ -223,8 +224,8 @@ class LoadingView : View {
             mTextPaint.alpha = alpha
             mSmallTextPaint.alpha = alpha
             mArcPaint.alpha = alpha
-            mColorLinePaint.alpha = alpha
-            drawColorLines(canvas)
+            mMaskPaint.alpha = alpha
+            drawLines(canvas)
             canvas.drawText("${progress}", mCircleX, mCircleY + 50, mTextPaint)
             canvas.drawText(
                     "%",
@@ -234,42 +235,49 @@ class LoadingView : View {
             )
             drawMovingArc(canvas)
         } else {
-            if (mBitmap.width * mOuterRadius * 2 > mBitmap.height * mOuterRadius * 2) {
-                scale = mOuterRadius * 2.0f / mBitmap.width
-                dy = ((mOuterRadius * 2.0f - mBitmap.height * scale) * 0.5).toInt()
-            } else {
-                scale = mOuterRadius * 2.0f / mBitmap.height
-                dx = ((mOuterRadius * 2.0f - mBitmap.width * scale) * 0.5).toInt()
-            }
-            mMatrix.setScale(scale, scale)
-            mMatrix.postTranslate(dx + mCircleX - mOuterRadius, dy + mCircleY - mOuterRadius)
-            mShader.setLocalMatrix(mMatrix)
-            mPicPaint.setShader(mShader)
-            mColorLinePaint.alpha = 0
             mColorCirclePaint.alpha = 0
             mPicPaint.alpha = 0
+            mMaskPaint.alpha = 0
             if (alphaStep1 < 255) {
                 alphaStep1 += appearSpeed
                 alphaStep3 += appearSpeed / 2
-                mColorLinePaint.alpha = alphaStep1
+                mMaskPaint.alpha = alphaStep1
                 mPicPaint.alpha = alphaStep3
             } else if (alphaStep2 < 255) {
                 alphaStep2 += appearSpeed
                 alphaStep3 += appearSpeed / 2
-                mColorLinePaint.alpha = 255
                 mColorCirclePaint.alpha = alphaStep2
                 mPicPaint.alpha = alphaStep3
+                mMaskPaint.alpha = 255
             } else {
-                mColorLinePaint.alpha = 255
+                mMaskPaint.alpha = 255
                 mColorCirclePaint.alpha = 255
                 mPicPaint.alpha = 255
             }
-            drawColorLines(canvas)
+            drawLines(canvas)
+            setCenterMatrix(mMatrix, mBitmap, mOuterRadius)
+            mShader.setLocalMatrix(mMatrix)
+            mPicPaint.setShader(mShader)
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mPicPaint)
             rotateAngle += colorCircleRotate
             canvas.rotate(rotateAngle, mCircleX, mCircleY)
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mColorCirclePaint)
         }
+    }
+
+    private fun setCenterMatrix(aMatrix: Matrix, aBitmap: Bitmap, aRadius: Float) {
+        var scale = 0f
+        var dx = 0
+        var dy = 0
+        if (aBitmap.width * aRadius * 2 > aBitmap.height * aRadius * 2) {
+            scale = aRadius * 2.0f / aBitmap.width
+            dy = ((aRadius * 2.0f - aBitmap.height * scale) * 0.5).toInt()
+        } else {
+            scale = aRadius * 2.0f / aBitmap.height
+            dx = ((aRadius * 2.0f - aBitmap.width * scale) * 0.5).toInt()
+        }
+        aMatrix.setScale(scale, scale)
+        aMatrix.postTranslate(dx + mCircleX - aRadius, dy + mCircleY - aRadius)
     }
 
     private fun drawText(canvas: Canvas) {
@@ -282,38 +290,31 @@ class LoadingView : View {
         )
     }
 
-    private fun drawColorLines(canvas: Canvas) {
-        canvas.save()
-        outRoateAngle += colorLineRotate
-        canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
-        for (i in 0..359 step 2) {
-            canvas.drawLine(
-                    ((mOuterRadius + dip2px(7)) * sin(2 * PI / 360 * i)).toFloat(),
-                    ((mOuterRadius + dip2px(7)) * cos(2 * PI / 360 * i)).toFloat(),
-                    ((lengthArray[i] + mOuterRadius + dip2px(7)) * sin(2 * PI / 360 * i)).toFloat(),
-                    ((lengthArray[i] + mOuterRadius + dip2px(7)) * cos(2 * PI / 360 * i)).toFloat(),
-                    mColorLinePaint
-            )
-        }
-        canvas.restore()
-    }
-
     private fun drawCircles(canvas: Canvas) {
         canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mOCPaint)
         canvas.drawCircle(mCircleX, mCircleY, mInnerRadius, mICPaint)
     }
 
     private fun drawLines(canvas: Canvas) {
+        val layer = canvas.saveLayer(mCircleX - width / 2, mCircleY - height / 2, mCircleX + width, mCircleY + height, null)
+        outRoateAngle += colorLineRotate
+        canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
         for (i in 0..359 step 2) {
             canvas.drawLine(
                     mCircleX,
                     mCircleY - mOuterRadius - dip2px(7),
                     mCircleX,
-                    mCircleY - mOuterRadius - dip2px(14) - mLineLength,
+                    mCircleY - mOuterRadius - dip2px(7) - mLineLength,
                     mICPaint
             )
             canvas.rotate(2f, mCircleX, mCircleY)
         }
+        setCenterMatrix(maskMatrix, mMaskBitmap, mOuterRadius + dip2px(14) + mLineLength)
+        mMaskShader.setLocalMatrix(maskMatrix)
+        mMaskPaint.setShader(mMaskShader)
+        mMaskPaint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP))
+        canvas.drawCircle(mCircleX, mCircleY, mOuterRadius + dip2px(7) + mLineLength, mMaskPaint)
+        canvas.restoreToCount(layer)
     }
 
     private fun initPaint() {
@@ -358,13 +359,6 @@ class LoadingView : View {
             shader = mLinearGradient2
             strokeWidth = dip2px(9)
             style = Paint.Style.STROKE
-            isAntiAlias = true
-            alpha = 255
-        }
-        mColorLinePaint.apply {
-            shader = mLinearGradient2
-            strokeWidth = dip2px(1)
-            style = Paint.Style.FILL
             isAntiAlias = true
             alpha = 255
         }
