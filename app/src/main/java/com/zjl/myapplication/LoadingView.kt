@@ -297,8 +297,6 @@ class LoadingView : View {
 
     private fun drawLines(canvas: Canvas) {
         val layer = canvas.saveLayer(mCircleX - width / 2, mCircleY - height / 2, mCircleX + width, mCircleY + height, null)
-        outRoateAngle += colorLineRotate
-        canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
         for (i in 0..359 step 2) {
             canvas.drawLine(
                     mCircleX,
@@ -309,6 +307,8 @@ class LoadingView : View {
             )
             canvas.rotate(2f, mCircleX, mCircleY)
         }
+        outRoateAngle += colorLineRotate
+        canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
         setCenterMatrix(maskMatrix, mMaskBitmap, mOuterRadius + dip2px(14) + mLineLength)
         mMaskShader.setLocalMatrix(maskMatrix)
         mMaskPaint.setShader(mMaskShader)
