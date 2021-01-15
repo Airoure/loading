@@ -3,5 +3,6 @@
     <declare-styleable name="LoadingView">
         <attr name="img" format="reference"/>
         <attr name="progress_size" format="dimension"/>
+        <attr name="error_img" format="reference"/>
     </declare-styleable>
 </resources>

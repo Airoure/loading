@@ -11,12 +11,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         var process = 0
         btnReset.setOnClickListener {
-            loadingView.setProgress(0)
-            process = 0
+//            loadingView.setProgress(0)
+//            process = 0
+            loadingView.setState(LoadingView.State.ERROR)
         }
         btnIncrease.setOnClickListener {
             process +=10
             loadingView.setProgress(process)
         }
+
     }
 }

@@ -9,6 +9,7 @@ import android.os.Message
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import java.util.*
 
@@ -23,6 +24,7 @@ class LoadingView : View {
     private val mArcPaint: Paint = Paint()
     private val mColorCirclePaint: Paint = Paint()
     private val mMaskPaint: Paint = Paint()
+    private val mErrorPaint: Paint = Paint()
     private var mOuterRadius = 0f
     private var mCircleX = 0f
     private var mCircleY = 0f
@@ -41,16 +43,20 @@ class LoadingView : View {
     private val appearSpeed = 5
     private val colorCircleRotate = 0.6f
     private val colorLineRotate = 0.6f
-    private val lengthArray = FloatArray(360)
     private val mMatrix = Matrix()
     private val maskMatrix = Matrix()
+    private val errorMatrix = Matrix()
     private lateinit var mBitmap: Bitmap
     private lateinit var mShader: BitmapShader
     private val mMaskBitmap = context.getDrawable(R.drawable.img_mask)!!.toBitmap()
     private val mMaskShader = BitmapShader(mMaskBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+    private lateinit var errorBitmap:Bitmap
+    private lateinit var errorShader:BitmapShader
     private lateinit var mLinearGradient: LinearGradient
     private lateinit var mLinearGradient2: LinearGradient
-    private var progressTextSize: Float = 42f
+    private var progressTextSize: Float = 0f
+    private var errorImg: Drawable? = null
+    private var isError = false
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -64,11 +70,19 @@ class LoadingView : View {
         if (attributeSet == null) return
         val typeArrays = context.obtainStyledAttributes(attributeSet, R.styleable.LoadingView)
         pic = typeArrays.getDrawable(R.styleable.LoadingView_img)
-        progressTextSize = typeArrays.getDimension(R.styleable.LoadingView_progress_size, 150f)
-        Log.e("test", progressTextSize.toString())
+        if(pic==null){
+            pic = ContextCompat.getDrawable(context,R.drawable.test)
+        }
+        errorImg = typeArrays.getDrawable(R.styleable.LoadingView_error_img)
+        if(errorImg==null){
+            errorImg = ContextCompat.getDrawable(context, R.drawable.img_error)
+        }
+        progressTextSize = typeArrays.getDimension(R.styleable.LoadingView_progress_size, sp2px(64))
         typeArrays.recycle()
         mBitmap = pic!!.toBitmap()
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+        errorBitmap = errorImg!!.toBitmap()
+        errorShader = BitmapShader(errorBitmap,Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
     }
 
     override fun onAttachedToWindow() {
@@ -131,13 +145,24 @@ class LoadingView : View {
         initPaint()
         canvas!!.translate((width / 2).toFloat(), (height / 2).toFloat())
         drawCircles(canvas)
-        if (isLoading == false) {
-            hideAndShow(canvas)
-        } else {
-            drawLines(canvas)
-            drawText(canvas)
-            drawMovingArc(canvas)
+        if(!isError){
+            if (isLoading == false) {
+                hideAndShow(canvas)
+            } else {
+                drawLines(canvas)
+                drawText(canvas)
+                drawMovingArc(canvas)
+            }
+        }else{
+            drawError(canvas)
         }
+    }
+
+    private fun drawError(canvas: Canvas) {
+        setCenterMatrix(errorMatrix, errorBitmap, mOuterRadius)
+        errorShader.setLocalMatrix(errorMatrix)
+        mErrorPaint.setShader(errorShader)
+        canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mPicPaint)
     }
 
     override fun onDetachedFromWindow() {
@@ -160,6 +185,23 @@ class LoadingView : View {
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
     }
 
+    fun setState(state: String){
+        when(state){
+            State.LOADING->setLoading()
+            State.ERROR->setError()
+        }
+    }
+
+    private fun setError() {
+        progress = 100
+        isError = true
+    }
+
+    private fun setLoading() {
+        progress = 0
+        isError = false
+    }
+
     private fun resetAlpha() {
         alphaStep1 = 0
         alphaStep2 = 0
@@ -168,14 +210,11 @@ class LoadingView : View {
     }
 
     private fun initParam() {
-        mOuterRadius = Math.min(width, height) * 0.7.toFloat() / 2
+        mOuterRadius = dip2px(115)
         mCircleX = 0f
         mCircleY = 0f
-        mInnerRadius = (mOuterRadius * 0.9).toFloat()
-        mLineLength = mOuterRadius / 9
-        for (i in 0..359) {
-            lengthArray[i] = Random().nextFloat() * mLineLength * 2
-        }
+        mInnerRadius = dip2px(100)
+        mLineLength = dip2px(15)
         mLinearGradient = LinearGradient(
                 mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
                 intArrayOf(
@@ -222,13 +261,7 @@ class LoadingView : View {
             mArcPaint.alpha = alpha
             mMaskPaint.alpha = alpha
             drawLines(canvas)
-            canvas.drawText("${progress}", mCircleX, mCircleY + 50, mTextPaint)
-            canvas.drawText(
-                    "%",
-                    mCircleX + mTextPaint.measureText("${progress}") / 2,
-                    mCircleY + 50,
-                    mSmallTextPaint
-            )
+            drawText(canvas)
             drawMovingArc(canvas)
         } else {
             mColorCirclePaint.alpha = 0
@@ -293,23 +326,24 @@ class LoadingView : View {
 
     private fun drawLines(canvas: Canvas) {
         val layer = canvas.saveLayer(mCircleX - width / 2, mCircleY - height / 2, mCircleX + width, mCircleY + height, null)
+        mICPaint.strokeWidth = dip2px(2)
         for (i in 0..359 step 2) {
             canvas.drawLine(
                     mCircleX,
-                    mCircleY - mOuterRadius - dip2px(7),
+                    dip2px(130),
                     mCircleX,
-                    mCircleY - mOuterRadius - dip2px(7) - mLineLength,
+                    dip2px(145),
                     mICPaint
             )
             canvas.rotate(2f, mCircleX, mCircleY)
         }
         outRoateAngle += colorLineRotate
         canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
-        setCenterMatrix(maskMatrix, mMaskBitmap, mOuterRadius + dip2px(14) + mLineLength)
+        setCenterMatrix(maskMatrix, mMaskBitmap, dip2px(153))
         mMaskShader.setLocalMatrix(maskMatrix)
         mMaskPaint.setShader(mMaskShader)
         mMaskPaint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP))
-        canvas.drawCircle(mCircleX, mCircleY, mOuterRadius + dip2px(7) + mLineLength, mMaskPaint)
+        canvas.drawCircle(mCircleX, mCircleY, dip2px(153), mMaskPaint)
         canvas.restoreToCount(layer)
     }
 
@@ -317,7 +351,7 @@ class LoadingView : View {
         mOCPaint.apply {
             color = Color.parseColor("#282D45")
             style = Paint.Style.STROKE
-            strokeWidth = dip2px(7)
+            strokeWidth = dip2px(14)
             isAntiAlias = true
             alpha = 255
         }
@@ -340,12 +374,12 @@ class LoadingView : View {
             color = Color.parseColor("#2C7FFB")
             style = Paint.Style.FILL
             isAntiAlias = true
-            textSize = progressTextSize / 3
+            textSize = (progressTextSize *0.28).toFloat()
             alpha = 255
         }
         mArcPaint.apply {
             shader = mLinearGradient
-            strokeWidth = dip2px(7)
+            strokeWidth = dip2px(14)
             style = Paint.Style.STROKE
             isAntiAlias = true
             strokeCap = Paint.Cap.ROUND
@@ -353,7 +387,7 @@ class LoadingView : View {
         }
         mColorCirclePaint.apply {
             shader = mLinearGradient2
-            strokeWidth = dip2px(9)
+            strokeWidth = dip2px(14)
             style = Paint.Style.STROKE
             isAntiAlias = true
             alpha = 255
@@ -363,5 +397,14 @@ class LoadingView : View {
     private fun dip2px(dipValue: Int): Float {
         val scale = context.resources.displayMetrics.density
         return dipValue * scale
+    }
+    private fun sp2px(spValue: Int): Float {
+        val fontScale = context.resources.displayMetrics.scaledDensity
+        return spValue * fontScale
+    }
+
+    object State{
+        const val LOADING = "loading"
+        const val ERROR = "error"
     }
 }

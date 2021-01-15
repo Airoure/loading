@@ -9,10 +9,10 @@
 
     <com.zjl.myapplication.LoadingView
         android:id="@+id/loadingView"
-        android:layout_width="230dp"
-        android:layout_height="230dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:img="@drawable/test"
-        app:progress_size="43dp"
+        app:error_img="@drawable/img_error"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
