@@ -2,21 +2,15 @@ package com.zjl.myapplication
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
 import androidx.core.graphics.drawable.toBitmap
 import java.util.*
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 
 class LoadingView : View {
@@ -28,7 +22,6 @@ class LoadingView : View {
     private val mSmallTextPaint: Paint = Paint()
     private val mArcPaint: Paint = Paint()
     private val mColorCirclePaint: Paint = Paint()
-
     private val mMaskPaint: Paint = Paint()
     private var mOuterRadius = 0f
     private var mCircleX = 0f
@@ -57,6 +50,7 @@ class LoadingView : View {
     private val mMaskShader = BitmapShader(mMaskBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
     private lateinit var mLinearGradient: LinearGradient
     private lateinit var mLinearGradient2: LinearGradient
+    private var progressTextSize: Float = 42f
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -70,6 +64,8 @@ class LoadingView : View {
         if (attributeSet == null) return
         val typeArrays = context.obtainStyledAttributes(attributeSet, R.styleable.LoadingView)
         pic = typeArrays.getDrawable(R.styleable.LoadingView_img)
+        progressTextSize = typeArrays.getDimension(R.styleable.LoadingView_progress_size, 150f)
+        Log.e("test", progressTextSize.toString())
         typeArrays.recycle()
         mBitmap = pic!!.toBitmap()
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
@@ -281,11 +277,11 @@ class LoadingView : View {
     }
 
     private fun drawText(canvas: Canvas) {
-        canvas.drawText("${progress}", mCircleX, mCircleY + 50, mTextPaint)
+        canvas.drawText("${progress}", mCircleX, mCircleY + progressTextSize / 3, mTextPaint)
         canvas.drawText(
                 "%",
                 mCircleX + mTextPaint.measureText("${progress}") / 2,
-                mCircleY + 50,
+                mCircleY + progressTextSize / 3,
                 mSmallTextPaint
         )
     }
@@ -337,14 +333,14 @@ class LoadingView : View {
             style = Paint.Style.FILL
             isAntiAlias = true
             textAlign = Paint.Align.CENTER
-            textSize = 150f
+            textSize = progressTextSize
             alpha = 255
         }
         mSmallTextPaint.apply {
             color = Color.parseColor("#2C7FFB")
             style = Paint.Style.FILL
             isAntiAlias = true
-            textSize = 50f
+            textSize = progressTextSize / 3
             alpha = 255
         }
         mArcPaint.apply {
@@ -366,6 +362,6 @@ class LoadingView : View {
 
     private fun dip2px(dipValue: Int): Float {
         val scale = context.resources.displayMetrics.density
-        return dipValue * scale + 0.5f
+        return dipValue * scale
     }
 }
