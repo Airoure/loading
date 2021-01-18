@@ -8,7 +8,7 @@ android {
     compileSdkVersion 30
 
     defaultConfig {
-        applicationId "com.zjl.myapplication"
+        applicationId "com.zjl.loading"
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
@@ -43,4 +43,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.5'
+    implementation 'com.zjl.accelerateloading:accelerateLoading:1.0.1'
 }

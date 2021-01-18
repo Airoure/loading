@@ -1,4 +1,4 @@
-package com.zjl.myapplication
+package com.zjl.loading
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry

@@ -1,4 +1,4 @@
-package com.zjl.myapplication
+package com.zjl.loading
 
 import android.content.Context
 import android.graphics.*

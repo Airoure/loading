@@ -1,2 +1,3 @@
-rootProject.name = "My Application"
+rootProject.name = "AcceleratorLoadingView"
 include ':app'
+include ':accelerateLoading'

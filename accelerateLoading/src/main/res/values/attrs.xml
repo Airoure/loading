@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="LoadingView">
+        <attr name="img" format="reference"/>
+        <attr name="progress_size" format="dimension"/>
+        <attr name="error_img" format="reference"/>
+    </declare-styleable>
+</resources>

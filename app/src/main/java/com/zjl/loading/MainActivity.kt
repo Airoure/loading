@@ -1,4 +1,4 @@
-package com.zjl.myapplication
+package com.zjl.loading
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

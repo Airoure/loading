@@ -7,7 +7,7 @@
     android:background="#1B1C2A"
     tools:context=".MainActivity">
 
-    <com.zjl.myapplication.LoadingView
+    <com.zjl.loading.LoadingView
         android:id="@+id/loadingView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
