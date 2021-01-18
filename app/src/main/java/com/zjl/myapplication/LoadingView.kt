@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import kotlin.math.sqrt
 
 
 class LoadingView : View {
@@ -46,8 +47,9 @@ class LoadingView : View {
     private val errorMatrix = Matrix()
     private lateinit var mBitmap: Bitmap
     private lateinit var mShader: BitmapShader
-    private val mMaskBitmap = context.getDrawable(R.drawable.img_mask)!!.toBitmap()
-    private val mMaskShader = BitmapShader(mMaskBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+    private var mMaskPic:Drawable? = null
+    private var mMaskBitmap:Bitmap? = null
+    private var mMaskShader:BitmapShader? = null
     private lateinit var errorBitmap: Bitmap
     private lateinit var errorShader: BitmapShader
     private lateinit var mLinearGradient: LinearGradient
@@ -75,6 +77,9 @@ class LoadingView : View {
         if (errorImg == null) {
             errorImg = ContextCompat.getDrawable(context, R.drawable.img_error)
         }
+        mMaskPic = ContextCompat.getDrawable(context,R.drawable.img_mask)
+        mMaskBitmap = mMaskPic!!.toBitmap()
+        mMaskShader = BitmapShader(mMaskBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         progressTextSize = typeArrays.getDimension(R.styleable.LoadingView_progress_size, sp2px(64))
         typeArrays.recycle()
         mBitmap = pic!!.toBitmap()
@@ -143,7 +148,7 @@ class LoadingView : View {
         canvas!!.translate((width / 2).toFloat(), (height / 2).toFloat())
         drawCircles(canvas)
         if (!isError) {
-            if (isLoading == false) {
+            if (!isLoading) {
                 hideAndShow(canvas)
             } else {
                 drawLines(canvas)
@@ -157,10 +162,10 @@ class LoadingView : View {
 
     private fun drawError(canvas: Canvas) {
         drawScaleLine(canvas)
-        setCenterMatrix(errorMatrix, errorBitmap, mInnerRadius - 80f)
+        setRectCenterMatrix(errorMatrix, errorBitmap, mInnerRadius/ sqrt(2f), mInnerRadius/ sqrt(2f))
         errorShader.setLocalMatrix(errorMatrix)
-        mErrorPaint.setShader(errorShader)
-        canvas.drawCircle(mCircleX, mCircleY, mInnerRadius - 45f, mErrorPaint)
+        mErrorPaint.shader = errorShader
+        canvas.drawRect((mCircleX-mInnerRadius)/ sqrt(2f),(mCircleY-mInnerRadius)/ sqrt(2f),(mCircleX+mInnerRadius)/ sqrt(2f), (mCircleY+mInnerRadius)/ sqrt(2f), mErrorPaint)
     }
 
     override fun onDetachedFromWindow() {
@@ -274,7 +279,7 @@ class LoadingView : View {
             drawLines(canvas)
             setCenterMatrix(mMatrix, mBitmap, mOuterRadius)
             mShader.setLocalMatrix(mMatrix)
-            mPicPaint.setShader(mShader)
+            mPicPaint.shader = mShader
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mPicPaint)
             rotateAngle += colorCircleRotate
             canvas.rotate(rotateAngle, mCircleX, mCircleY)
@@ -283,7 +288,7 @@ class LoadingView : View {
     }
 
     private fun setCenterMatrix(aMatrix: Matrix, aBitmap: Bitmap, aRadius: Float) {
-        var scale = 0f
+        val scale: Float
         var dx = 0
         var dy = 0
         if (aBitmap.width * aRadius * 2 > aBitmap.height * aRadius * 2) {
@@ -297,11 +302,26 @@ class LoadingView : View {
         aMatrix.postTranslate(dx + mCircleX - aRadius, dy + mCircleY - aRadius)
     }
 
+    private fun setRectCenterMatrix(aMatrix: Matrix, aBitmap: Bitmap, aWidth: Float, aHeight: Float){
+        val scale: Float
+        var dx = 0
+        var dy = 0
+        if (aBitmap.width * aWidth * 2 > aBitmap.height * aHeight * 2) {
+            scale = aWidth * 2.0f / aBitmap.width
+            dy = ((aHeight * 2.0f - aBitmap.height * scale) * 0.5).toInt()
+        } else {
+            scale = aHeight * 2.0f / aBitmap.height
+            dx = ((aWidth * 2.0f - aBitmap.width * scale) * 0.5).toInt()
+        }
+        aMatrix.setScale(scale, scale)
+        aMatrix.postTranslate(dx + mCircleX - aWidth, dy + mCircleY - aHeight)
+    }
+
     private fun drawText(canvas: Canvas) {
-        canvas.drawText("${progress}", mCircleX, mCircleY + progressTextSize / 3, mTextPaint)
+        canvas.drawText("$progress", mCircleX, mCircleY + progressTextSize / 3, mTextPaint)
         canvas.drawText(
                 "%",
-                mCircleX + mTextPaint.measureText("${progress}") / 2,
+                mCircleX + mTextPaint.measureText("$progress") / 2,
                 mCircleY + progressTextSize / 3,
                 mSmallTextPaint
         )
@@ -317,8 +337,8 @@ class LoadingView : View {
         drawScaleLine(canvas)
         outRoateAngle += colorLineRotate
         canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
-        setCenterMatrix(maskMatrix, mMaskBitmap, dip2px(153))
-        mMaskShader.setLocalMatrix(maskMatrix)
+        setCenterMatrix(maskMatrix, mMaskBitmap!!, dip2px(153))
+        mMaskShader!!.setLocalMatrix(maskMatrix)
         mMaskPaint.shader = mMaskShader
         mMaskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
         canvas.drawCircle(mCircleX, mCircleY, dip2px(153), mMaskPaint)
