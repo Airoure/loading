@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -49,9 +48,9 @@ class LoadingView : View {
     private val errorMatrix = Matrix()
     private lateinit var mBitmap: Bitmap
     private lateinit var mShader: BitmapShader
-    private var mMaskPic:Drawable? = null
-    private var mMaskBitmap:Bitmap? = null
-    private var mMaskShader:BitmapShader? = null
+    private var mMaskPic: Drawable? = null
+    private var mMaskBitmap: Bitmap? = null
+    private var mMaskShader: BitmapShader? = null
     private lateinit var errorBitmap: Bitmap
     private lateinit var errorShader: BitmapShader
     private lateinit var mLinearGradient: LinearGradient
@@ -79,7 +78,7 @@ class LoadingView : View {
         if (errorImg == null) {
             errorImg = ContextCompat.getDrawable(context, R.drawable.img_error)
         }
-        mMaskPic = ContextCompat.getDrawable(context,R.drawable.img_mask)
+        mMaskPic = ContextCompat.getDrawable(context, R.drawable.img_mask)
         mMaskBitmap = mMaskPic!!.toBitmap()
         mMaskShader = BitmapShader(mMaskBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         progressTextSize = typeArrays.getDimension(R.styleable.LoadingView_progress_size, sp2px(64))
@@ -94,9 +93,9 @@ class LoadingView : View {
         super.onAttachedToWindow()
         Thread {
             while (true) {
-                if(progress < targetProgress){
+                if (progress < targetProgress) {
                     progress++
-                }else if(targetProgress == 0){
+                } else if (targetProgress == 0) {
                     progress = 0
                     resetAlpha()
                 }
@@ -168,10 +167,10 @@ class LoadingView : View {
 
     private fun drawError(canvas: Canvas) {
         drawScaleLine(canvas)
-        setRectCenterMatrix(errorMatrix, errorBitmap, mInnerRadius/ sqrt(2f), mInnerRadius/ sqrt(2f))
+        setRectCenterMatrix(errorMatrix, errorBitmap, mInnerRadius / sqrt(2f), mInnerRadius / sqrt(2f))
         errorShader.setLocalMatrix(errorMatrix)
         mErrorPaint.shader = errorShader
-        canvas.drawRect((mCircleX-mInnerRadius)/ sqrt(2f),(mCircleY-mInnerRadius)/ sqrt(2f),(mCircleX+mInnerRadius)/ sqrt(2f), (mCircleY+mInnerRadius)/ sqrt(2f), mErrorPaint)
+        canvas.drawRect((mCircleX - mInnerRadius) / sqrt(2f), (mCircleY - mInnerRadius) / sqrt(2f), (mCircleX + mInnerRadius) / sqrt(2f), (mCircleY + mInnerRadius) / sqrt(2f), mErrorPaint)
     }
 
     override fun onDetachedFromWindow() {
@@ -306,7 +305,7 @@ class LoadingView : View {
         aMatrix.postTranslate(dx + mCircleX - aRadius, dy + mCircleY - aRadius)
     }
 
-    private fun setRectCenterMatrix(aMatrix: Matrix, aBitmap: Bitmap, aWidth: Float, aHeight: Float){
+    private fun setRectCenterMatrix(aMatrix: Matrix, aBitmap: Bitmap, aWidth: Float, aHeight: Float) {
         val scale: Float
         var dx = 0
         var dy = 0
