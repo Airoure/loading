@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -14,6 +15,7 @@ import kotlin.math.sqrt
 
 
 class LoadingView : View {
+    private var targetProgress: Int = 0
     private var pic: Drawable? = null
     private val mOCPaint: Paint = Paint()
     private val mICPaint: Paint = Paint()
@@ -35,8 +37,8 @@ class LoadingView : View {
     private var alphaStep1 = 0
     private var alphaStep2 = 0
     private var alphaStep3 = 0
-    private var rotateAngle = 0f
-    private var outRoateAngle = 0f
+    private var roteAngle = 0f
+    private var outRoteAngle = 0f
     private val arcSpeed = 1.2f
     private val disappearSpeed = 5
     private val appearSpeed = 5
@@ -92,16 +94,20 @@ class LoadingView : View {
         super.onAttachedToWindow()
         Thread {
             while (true) {
+                if(progress < targetProgress){
+                    progress++
+                }else if(targetProgress == 0){
+                    progress = 0
+                    resetAlpha()
+                }
                 if (progress < 100) {
                     isLoading = true
-                    mHandler.sendEmptyMessage(0)
-                    Thread.sleep(10)
                 }
                 if (progress == 100) {
                     isLoading = false
-                    mHandler.sendEmptyMessage(0)
-                    Thread.sleep(10)
                 }
+                mHandler.sendEmptyMessage(0)
+                Thread.sleep(10)
             }
         }.start()
     }
@@ -175,10 +181,7 @@ class LoadingView : View {
 
     fun setProgress(progress: Int) {
         if (progress in 0..100) {
-            this.progress = progress
-        }
-        if (progress == 0) {
-            resetAlpha()
+            this.targetProgress = progress
         }
     }
 
@@ -196,6 +199,7 @@ class LoadingView : View {
     }
 
     private fun resetAlpha() {
+        alpha = 255
         alphaStep1 = 0
         alphaStep2 = 0
         alphaStep3 = 0
@@ -232,8 +236,8 @@ class LoadingView : View {
     }
 
     private fun drawMovingArc(canvas: Canvas) {
-        rotateAngle += arcSpeed
-        canvas.rotate(rotateAngle, mCircleX, mCircleY)
+        roteAngle += arcSpeed
+        canvas.rotate(roteAngle, mCircleX, mCircleY)
         canvas.drawArc(
                 mCircleX - mOuterRadius,
                 mCircleY - mOuterRadius,
@@ -281,8 +285,8 @@ class LoadingView : View {
             mShader.setLocalMatrix(mMatrix)
             mPicPaint.shader = mShader
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mPicPaint)
-            rotateAngle += colorCircleRotate
-            canvas.rotate(rotateAngle, mCircleX, mCircleY)
+            roteAngle += colorCircleRotate
+            canvas.rotate(roteAngle, mCircleX, mCircleY)
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mColorCirclePaint)
         }
     }
@@ -335,8 +339,8 @@ class LoadingView : View {
     private fun drawLines(canvas: Canvas) {
         val layer = canvas.saveLayer(mCircleX - width / 2, mCircleY - height / 2, mCircleX + width, mCircleY + height, null)
         drawScaleLine(canvas)
-        outRoateAngle += colorLineRotate
-        canvas.rotate(-outRoateAngle, mCircleX, mCircleY)
+        outRoteAngle += colorLineRotate
+        canvas.rotate(-outRoteAngle, mCircleX, mCircleY)
         setCenterMatrix(maskMatrix, mMaskBitmap!!, dip2px(153))
         mMaskShader!!.setLocalMatrix(maskMatrix)
         mMaskPaint.shader = mMaskShader
