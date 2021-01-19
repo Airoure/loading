@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import kotlin.math.log
 import kotlin.math.sqrt
 
 
@@ -187,6 +188,11 @@ class LoadingView : View {
     fun setLogo(logo: Drawable) {
         this.pic = logo
         mBitmap = pic!!.toBitmap()
+        mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+    }
+
+    fun setLogo(logo: Bitmap) {
+        mBitmap = logo
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
     }
 
