@@ -89,37 +89,6 @@ class LoadingView : View {
         errorShader = BitmapShader(errorBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        Thread {
-            while (true) {
-                if (progress < targetProgress) {
-                    progress++
-                } else if (targetProgress == 0) {
-                    progress = 0
-                    resetAlpha()
-                }
-                if (progress < 100) {
-                    isLoading = true
-                }
-                if (progress == 100) {
-                    isLoading = false
-                }
-                mHandler.sendEmptyMessage(0)
-                Thread.sleep(10)
-            }
-        }.start()
-    }
-
-    private val mHandler = object : Handler(Looper.getMainLooper()) {
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-            when (msg.what) {
-                0 -> invalidate()
-            }
-        }
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -162,6 +131,27 @@ class LoadingView : View {
             }
         } else {
             drawError(canvas)
+        }
+        calculateProgress()
+        changeState()
+        invalidate()
+    }
+
+    private fun changeState() {
+        if (progress < 100) {
+            isLoading = true
+        }
+        if (progress == 100) {
+            isLoading = false
+        }
+    }
+
+    private fun calculateProgress(){
+        if (progress < targetProgress) {
+            progress++
+        } else if (targetProgress == 0) {
+            progress = 0
+            resetAlpha()
         }
     }
 

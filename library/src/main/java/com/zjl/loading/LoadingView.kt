@@ -1,4 +1,4 @@
-package com.zjl.accelerateloading
+package com.zjl.loading
 
 import android.content.Context
 import android.graphics.*
