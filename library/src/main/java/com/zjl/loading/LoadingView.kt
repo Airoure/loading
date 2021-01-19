@@ -193,7 +193,7 @@ class LoadingView : View {
 
     fun setLogo(logo: Bitmap) {
         mBitmap = logo
-        mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+        mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
     }
 
     fun setState(state: String) {
