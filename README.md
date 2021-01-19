@@ -24,3 +24,7 @@ implementation 'com.zjl.loading:library:1.0.1'
 loading view的状态有两种，一种是```LoadingView.State.ERROR```，另一种是```LoadingView.State.LOADING```，可以在代码中通过```setState```方法设置状态。
 #### 7.设置进度文字大小
 可以通过xml属性中的```progress_size```来设置进度文字大小，单位是sp，不设置的话，默认是64sp。
+#### 8.效果展示
+![image](https://github.com/Airoure/loading/blob/master/screenshot/error.PNG)
+![image](https://github.com/Airoure/loading/blob/master/screenshot/loading.PNG)
+![image](https://github.com/Airoure/loading/blob/master/screenshot/loading_finish.PNG)
