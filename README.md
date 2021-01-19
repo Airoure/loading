@@ -15,7 +15,7 @@ implementation 'com.zjl.loading:library:1.0.1'
     android:layout_height="wrap_content"/>
 ```
 #### 3.设置加载成功图
-通过xml中的```app:img```或者在代码中调用```setIcon```方法可以设置加载成功图。
+通过xml中的```app:img```或者在代码中调用```setLogo```方法可以设置加载成功图。
 #### 4.设置错误状态图
 通过xml中的```app:error_img```可以设置错误状态图。
 #### 5.设置进度
@@ -24,3 +24,12 @@ implementation 'com.zjl.loading:library:1.0.1'
 loading view的状态有两种，一种是```LoadingView.State.ERROR```，另一种是```LoadingView.State.LOADING```，可以在代码中通过```setState```方法设置状态。
 #### 7.设置进度文字大小
 可以通过xml属性中的```progress_size```来设置进度文字大小，单位是sp，不设置的话，默认是64sp。
+#### 8.效果展示
+##### 8.1.错误状态
+![image](https://github.com/Airoure/loading/blob/master/screenshot/error.PNG)
+
+##### 8.2.加载状态
+![image](https://github.com/Airoure/loading/blob/master/screenshot/loading.PNG)
+
+##### 8.3.加载结束
+![image](https://github.com/Airoure/loading/blob/master/screenshot/loading_finish.PNG)
