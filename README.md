@@ -28,8 +28,8 @@ loading view的状态有两种，一种是```LoadingView.State.ERROR```，另一
 ##### 8.1.错误状态
 ![image](https://github.com/Airoure/loading/blob/master/screenshot/error.PNG)
 
-#### 8.2.加载状态
+##### 8.2.加载状态
 ![image](https://github.com/Airoure/loading/blob/master/screenshot/loading.PNG)
 
-#### 8.3.加载结束
+##### 8.3.加载结束
 ![image](https://github.com/Airoure/loading/blob/master/screenshot/loading_finish.PNG)
