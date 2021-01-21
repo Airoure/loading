@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -40,11 +39,11 @@ class LoadingView2 : View {
     private var alphaStep3 = 0
     private var roteAngle = 0f
     private var outRoteAngle = 0f
-    private val arcSpeed = 1.2f
+    private val arcSpeed = 1.0f
     private val disappearSpeed = 5
     private val appearSpeed = 5
-    private val colorCircleRotate = 0.6f
-    private val colorLineRotate = 0.6f
+    private val colorCircleRotate = 0.5f
+    private val colorLineRotate = 0.5f
     private val mMatrix = Matrix()
     private val maskMatrix = Matrix()
     private val errorMatrix = Matrix()
@@ -60,6 +59,8 @@ class LoadingView2 : View {
     private var progressTextSize: Float = 0f
     private var errorImg: Drawable? = null
     private var isError = false
+    private var onComplete = false
+    private var listener: OnCompleteListener? = null
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -89,28 +90,6 @@ class LoadingView2 : View {
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
         errorBitmap = errorImg!!.toBitmap()
         errorShader = BitmapShader(errorBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        Thread {
-            while (true) {
-                if (progress < targetProgress) {
-                    progress++
-                } else if (targetProgress == 0) {
-                    progress = 0
-                    resetAlpha()
-                }
-                if (progress < 100) {
-                    isLoading = true
-                }
-                if (progress == 100) {
-                    isLoading = false
-                }
-                Thread.sleep(10)
-                mHandler.sendEmptyMessage(0)
-            }
-        }.start()
     }
 
     private val mHandler = object : Handler(Looper.getMainLooper()) {
@@ -165,6 +144,27 @@ class LoadingView2 : View {
         } else {
             drawError(canvas)
         }
+        updateProgress()
+        invalidate()
+    }
+
+    private fun updateProgress() {
+        if (progress == 100 && onComplete == false) {
+            listener?.onComplete()
+            onComplete = true
+        }
+        if (progress < targetProgress) {
+            progress++
+        } else if (targetProgress == 0) {
+            progress = 0
+            resetAlpha()
+            onComplete = false
+        }
+        if (progress < 100) {
+            isLoading = true
+        } else if (progress == 100) {
+            isLoading = false
+        }
     }
 
     private fun drawError(canvas: Canvas) {
@@ -212,7 +212,7 @@ class LoadingView2 : View {
         when (state) {
             State.LOADING -> isError = false
             State.ERROR -> isError = true
-            State.COMPLETE ->{
+            State.COMPLETE -> {
                 alpha = 0
                 alphaStep1 = 255
                 alphaStep2 = 255
@@ -222,6 +222,10 @@ class LoadingView2 : View {
                 targetProgress = 100
             }
         }
+    }
+
+    fun setOnCompleteListener(listener: OnCompleteListener) {
+        this.listener = listener
     }
 
     private fun resetAlpha() {
@@ -277,7 +281,6 @@ class LoadingView2 : View {
     }
 
     private fun hideAndShow(canvas: Canvas) {
-        Log.e("alpha","$alpha")
         if (alpha > 0) {
             alpha -= disappearSpeed
             mTextPaint.alpha = alpha
@@ -462,5 +465,9 @@ class LoadingView2 : View {
         const val LOADING = "loading"
         const val ERROR = "error"
         const val COMPLETE = "complete"
+    }
+
+    interface OnCompleteListener {
+        fun onComplete()
     }
 }

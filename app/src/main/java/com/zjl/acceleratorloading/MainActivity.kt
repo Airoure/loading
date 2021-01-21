@@ -1,9 +1,9 @@
 package com.zjl.acceleratorloading
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.zjl.loading.LoadingView
-import com.zjl.acceleratorloading.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
             process = 0
         }
         btnIncrease.setOnClickListener {
-            process +=10
+            process += 10
             loadingView.setProgress(process)
         }
         btnLoading.setOnClickListener {
@@ -29,5 +29,11 @@ class MainActivity : AppCompatActivity() {
         btnComplete.setOnClickListener {
             loadingView.setState(LoadingView.State.COMPLETE)
         }
+        loadingView.setOnCompleteListener(object : LoadingView.OnCompleteListener {
+            override fun onComplete() {
+                Toast.makeText(this@MainActivity, "加载完成", Toast.LENGTH_SHORT).show()
+            }
+
+        })
     }
 }
