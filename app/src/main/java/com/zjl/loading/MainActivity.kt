@@ -24,5 +24,8 @@ class MainActivity : AppCompatActivity() {
         btnError.setOnClickListener {
             loadingView.setState(LoadingView.State.ERROR)
         }
+        btnComplete.setOnClickListener {
+            loadingView.setState(LoadingView.State.COMPLETE)
+        }
     }
 }

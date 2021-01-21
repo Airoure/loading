@@ -13,7 +13,7 @@ import androidx.core.graphics.drawable.toBitmap
 import kotlin.math.sqrt
 
 
-class LoadingView : View {
+class LoadingView2 : View {
     private var targetProgress: Int = 0
     private var pic: Drawable? = null
     private val mOCPaint: Paint = Paint()
