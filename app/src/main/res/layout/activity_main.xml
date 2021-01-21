@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1B1C2A"
-    tools:context=".MainActivity">
+    tools:context="com.zjl.acceleratorloading.MainActivity">
     <com.zjl.loading.LoadingView
         android:id="@+id/loadingView"
         android:layout_width="wrap_content"

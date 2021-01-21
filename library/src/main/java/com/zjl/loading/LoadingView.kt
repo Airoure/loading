@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -105,8 +106,8 @@ class LoadingView : View {
                 if (progress == 100) {
                     isLoading = false
                 }
-                mHandler.sendEmptyMessage(0)
                 Thread.sleep(10)
+                mHandler.sendEmptyMessage(0)
             }
         }.start()
     }
@@ -211,6 +212,11 @@ class LoadingView : View {
             State.LOADING -> isError = false
             State.ERROR -> isError = true
             State.COMPLETE ->{
+                alpha = 0
+                alphaStep1 = 255
+                alphaStep2 = 255
+                alphaStep3 = 255
+                isLoading = false
                 progress = 100
                 targetProgress = 100
             }
@@ -270,6 +276,7 @@ class LoadingView : View {
     }
 
     private fun hideAndShow(canvas: Canvas) {
+        Log.e("alpha","$alpha")
         if (alpha > 0) {
             alpha -= disappearSpeed
             mTextPaint.alpha = alpha

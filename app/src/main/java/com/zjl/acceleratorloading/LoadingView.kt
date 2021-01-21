@@ -1,4 +1,4 @@
-package com.zjl.loading
+package com.zjl.acceleratorloading
 
 import android.content.Context
 import android.graphics.*
@@ -7,9 +7,11 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import com.zjl.loading.R
 import kotlin.math.sqrt
 
 
@@ -64,9 +66,9 @@ class LoadingView2 : View {
     constructor(context: Context, attributeSet: AttributeSet) : this(context, attributeSet, 0)
 
     constructor(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) : super(
-            context,
-            attributeSet,
-            defStyleAttr
+        context,
+        attributeSet,
+        defStyleAttr
     ) {
         if (attributeSet == null) return
         val typeArrays = context.obtainStyledAttributes(attributeSet, R.styleable.LoadingView)
@@ -87,6 +89,37 @@ class LoadingView2 : View {
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
         errorBitmap = errorImg!!.toBitmap()
         errorShader = BitmapShader(errorBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        Thread {
+            while (true) {
+                if (progress < targetProgress) {
+                    progress++
+                } else if (targetProgress == 0) {
+                    progress = 0
+                    resetAlpha()
+                }
+                if (progress < 100) {
+                    isLoading = true
+                }
+                if (progress == 100) {
+                    isLoading = false
+                }
+                Thread.sleep(10)
+                mHandler.sendEmptyMessage(0)
+            }
+        }.start()
+    }
+
+    private val mHandler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            when (msg.what) {
+                0 -> invalidate()
+            }
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -132,35 +165,25 @@ class LoadingView2 : View {
         } else {
             drawError(canvas)
         }
-        calculateProgress()
-        changeState()
-        invalidate()
-    }
-
-    private fun changeState() {
-        if (progress < 100) {
-            isLoading = true
-        }
-        if (progress == 100) {
-            isLoading = false
-        }
-    }
-
-    private fun calculateProgress(){
-        if (progress < targetProgress) {
-            progress++
-        } else if (targetProgress == 0) {
-            progress = 0
-            resetAlpha()
-        }
     }
 
     private fun drawError(canvas: Canvas) {
         drawScaleLine(canvas)
-        setRectCenterMatrix(errorMatrix, errorBitmap, mInnerRadius / sqrt(2f), mInnerRadius / sqrt(2f))
+        setRectCenterMatrix(
+            errorMatrix,
+            errorBitmap,
+            mInnerRadius / sqrt(2f),
+            mInnerRadius / sqrt(2f)
+        )
         errorShader.setLocalMatrix(errorMatrix)
         mErrorPaint.shader = errorShader
-        canvas.drawRect((mCircleX - mInnerRadius) / sqrt(2f), (mCircleY - mInnerRadius) / sqrt(2f), (mCircleX + mInnerRadius) / sqrt(2f), (mCircleY + mInnerRadius) / sqrt(2f), mErrorPaint)
+        canvas.drawRect(
+            (mCircleX - mInnerRadius) / sqrt(2f),
+            (mCircleY - mInnerRadius) / sqrt(2f),
+            (mCircleX + mInnerRadius) / sqrt(2f),
+            (mCircleY + mInnerRadius) / sqrt(2f),
+            mErrorPaint
+        )
     }
 
     override fun onDetachedFromWindow() {
@@ -180,10 +203,24 @@ class LoadingView2 : View {
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
     }
 
+    fun setLogo(logo: Bitmap) {
+        mBitmap = logo
+        mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+    }
+
     fun setState(state: String) {
         when (state) {
             State.LOADING -> isError = false
             State.ERROR -> isError = true
+            State.COMPLETE ->{
+                alpha = 0
+                alphaStep1 = 255
+                alphaStep2 = 255
+                alphaStep3 = 255
+                isLoading = false
+                progress = 100
+                targetProgress = 100
+            }
         }
     }
 
@@ -202,25 +239,25 @@ class LoadingView2 : View {
         mInnerRadius = dip2px(100)
         mLineLength = dip2px(15)
         mLinearGradient = LinearGradient(
-                mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
-                intArrayOf(
-                        Color.parseColor("#001DA0FF"),
-                        Color.parseColor("#2C41FB"),
-                        Color.parseColor("#FF26CF")
-                ),
-                floatArrayOf(0.09f, 0.62f, 0.99f),
-                Shader.TileMode.CLAMP
+            mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
+            intArrayOf(
+                Color.parseColor("#001DA0FF"),
+                Color.parseColor("#2C41FB"),
+                Color.parseColor("#FF26CF")
+            ),
+            floatArrayOf(0.09f, 0.62f, 0.99f),
+            Shader.TileMode.CLAMP
         )
         mLinearGradient2 = LinearGradient(
-                mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
-                intArrayOf(
-                        Color.parseColor("#1DA0FF"),
-                        Color.parseColor("#2C41FB"),
-                        Color.parseColor("#E547FF"),
-                        Color.parseColor("#FF26CF")
-                ),
-                floatArrayOf(0.0f, 0.23f, 0.89f, 0.99f),
-                Shader.TileMode.CLAMP
+            mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
+            intArrayOf(
+                Color.parseColor("#1DA0FF"),
+                Color.parseColor("#2C41FB"),
+                Color.parseColor("#E547FF"),
+                Color.parseColor("#FF26CF")
+            ),
+            floatArrayOf(0.0f, 0.23f, 0.89f, 0.99f),
+            Shader.TileMode.CLAMP
         )
     }
 
@@ -228,18 +265,19 @@ class LoadingView2 : View {
         roteAngle += arcSpeed
         canvas.rotate(roteAngle, mCircleX, mCircleY)
         canvas.drawArc(
-                mCircleX - mOuterRadius,
-                mCircleY - mOuterRadius,
-                mCircleX + mOuterRadius,
-                mCircleY + mOuterRadius,
-                180f,
-                270f,
-                false,
-                mArcPaint
+            mCircleX - mOuterRadius,
+            mCircleY - mOuterRadius,
+            mCircleX + mOuterRadius,
+            mCircleY + mOuterRadius,
+            180f,
+            270f,
+            false,
+            mArcPaint
         )
     }
 
     private fun hideAndShow(canvas: Canvas) {
+        Log.e("alpha","$alpha")
         if (alpha > 0) {
             alpha -= disappearSpeed
             mTextPaint.alpha = alpha
@@ -295,7 +333,12 @@ class LoadingView2 : View {
         aMatrix.postTranslate(dx + mCircleX - aRadius, dy + mCircleY - aRadius)
     }
 
-    private fun setRectCenterMatrix(aMatrix: Matrix, aBitmap: Bitmap, aWidth: Float, aHeight: Float) {
+    private fun setRectCenterMatrix(
+        aMatrix: Matrix,
+        aBitmap: Bitmap,
+        aWidth: Float,
+        aHeight: Float
+    ) {
         val scale: Float
         var dx = 0
         var dy = 0
@@ -313,10 +356,10 @@ class LoadingView2 : View {
     private fun drawText(canvas: Canvas) {
         canvas.drawText("$progress", mCircleX, mCircleY + progressTextSize / 3, mTextPaint)
         canvas.drawText(
-                "%",
-                mCircleX + mTextPaint.measureText("$progress") / 2,
-                mCircleY + progressTextSize / 3,
-                mSmallTextPaint
+            "%",
+            mCircleX + mTextPaint.measureText("$progress") / 2,
+            mCircleY + progressTextSize / 3,
+            mSmallTextPaint
         )
     }
 
@@ -326,7 +369,13 @@ class LoadingView2 : View {
     }
 
     private fun drawLines(canvas: Canvas) {
-        val layer = canvas.saveLayer(mCircleX - width / 2, mCircleY - height / 2, mCircleX + width, mCircleY + height, null)
+        val layer = canvas.saveLayer(
+            mCircleX - width / 2,
+            mCircleY - height / 2,
+            mCircleX + width,
+            mCircleY + height,
+            null
+        )
         drawScaleLine(canvas)
         outRoteAngle += colorLineRotate
         canvas.rotate(-outRoteAngle, mCircleX, mCircleY)
@@ -342,11 +391,11 @@ class LoadingView2 : View {
         mICPaint.strokeWidth = dip2px(2)
         for (i in 0..359 step 2) {
             canvas.drawLine(
-                    mCircleX,
-                    dip2px(130),
-                    mCircleX,
-                    dip2px(145),
-                    mICPaint
+                mCircleX,
+                dip2px(130),
+                mCircleX,
+                dip2px(145),
+                mICPaint
             )
             canvas.rotate(2f, mCircleX, mCircleY)
         }
@@ -412,5 +461,6 @@ class LoadingView2 : View {
     object State {
         const val LOADING = "loading"
         const val ERROR = "error"
+        const val COMPLETE = "complete"
     }
 }

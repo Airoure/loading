@@ -1,7 +1,9 @@
-package com.zjl.loading
+package com.zjl.acceleratorloading
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.zjl.loading.LoadingView
+import com.zjl.acceleratorloading.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
