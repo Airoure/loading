@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.zjl.loading.LoadingView
+
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -29,11 +30,13 @@ class MainActivity : AppCompatActivity() {
         btnComplete.setOnClickListener {
             loadingView.setState(LoadingView.State.COMPLETE)
         }
-        loadingView.setOnCompleteListener(object : LoadingView.OnCompleteListener {
-            override fun onComplete() {
-                Toast.makeText(this@MainActivity, "加载完成", Toast.LENGTH_SHORT).show()
-            }
-
-        })
+        loadingView.setOnCompleteListener {
+            Toast.makeText(
+                this@MainActivity,
+                "加载完成",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        loadingView.setOnClickListener(LoadingView.OnClickListener { Toast.makeText(this@MainActivity, "点击", Toast.LENGTH_SHORT).show() })
     }
 }

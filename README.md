@@ -10,7 +10,7 @@ implementation 'com.zjl.loading:library:1.0.1'
 ```
 #### 2.在xml布局中添加组件
 ```
-<com.zjl.accelerateloading.LoadingView
+<com.zjl.loading.LoadingView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"/>
 ```
@@ -26,12 +26,14 @@ loading view的状态有三种，第一种是```LoadingView.State.ERROR```，第
 可以通过xml属性中的```progress_size```来设置进度文字大小，单位是sp，不设置的话，默认是64sp。
 #### 8.设置加载完成监听事件
 可以通过```setOnCompletListener()``来设置
-#### 8.效果展示
-##### 8.1.错误状态
+#### 9.设置点击加载完成图的回调
+可以通过```setOnClickListener()``来设置
+#### 10.效果展示
+##### 10.1.错误状态
 ![image](https://github.com/Airoure/loading/blob/master/screenshot/error.PNG)
 
-##### 8.2.加载状态
+##### 10.2.加载状态
 ![image](https://github.com/Airoure/loading/blob/master/screenshot/loading.PNG)
 
-##### 8.3.加载结束
+##### 10.3.加载结束
 ![image](https://github.com/Airoure/loading/blob/master/screenshot/loading_finish.PNG)

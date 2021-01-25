@@ -3,13 +3,12 @@ package com.zjl.loading
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 
@@ -60,6 +59,7 @@ class LoadingView : View {
     private var isError = false
     private var onComplete = false
     private var listener: OnCompleteListener? = null
+    private var onClickListener: OnClickListener? = null
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -89,15 +89,6 @@ class LoadingView : View {
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
         errorBitmap = errorImg!!.toBitmap()
         errorShader = BitmapShader(errorBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
-    }
-
-    private val mHandler = object : Handler(Looper.getMainLooper()) {
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-            when (msg.what) {
-                0 -> invalidate()
-            }
-        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -147,8 +138,18 @@ class LoadingView : View {
         invalidate()
     }
 
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (inCircle(event!!.x, event.y) && !isLoading && !isError) {
+            onClickListener?.onClick()
+        }
+        return super.onTouchEvent(event)
+    }
+
+    private fun inCircle(x: Float, y: Float) =
+        (x - width / 2).pow(2) + (y - height / 2).pow(2) < mInnerRadius.pow(2)
+
     private fun updateProgress() {
-        if (progress == 100 && onComplete == false) {
+        if (progress == 100 && !onComplete) {
             listener?.onComplete()
             onComplete = true
         }
@@ -225,6 +226,10 @@ class LoadingView : View {
 
     fun setOnCompleteListener(listener: OnCompleteListener) {
         this.listener = listener
+    }
+
+    fun setOnClickListener(listener: OnClickListener) {
+        this.onClickListener = listener
     }
 
     private fun resetAlpha() {
@@ -466,7 +471,11 @@ class LoadingView : View {
         const val COMPLETE = "complete"
     }
 
-    interface OnCompleteListener {
+    fun interface OnCompleteListener {
         fun onComplete()
+    }
+
+    fun interface OnClickListener {
+        fun onClick()
     }
 }
