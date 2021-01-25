@@ -1,6 +1,6 @@
 
 [![License](https://img.shields.io/badge/License%20-Apache%202-337ab7.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![JCenter](https://img.shields.io/badge/%20JCenter%20-1.0.9-5bc0de.svg)](https://bintray.com/airoure/myrepo/library)
+[![JCenter](https://img.shields.io/badge/%20JCenter%20-1.0.9-5bc0de.svg)](https://bintray.com/airoure/myrepo/library/_latestVersion)
 # Android自定义加载组件
 这是一个自定义的加载组件，可以实现修改加载进度，修改加载完成图，错误状态和修改错误状态图。
 ## 使用方法
