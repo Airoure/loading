@@ -6,8 +6,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.zjl.loading.LoadingView
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -47,8 +45,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         })
-        GlobalScope.launch {
-            loadingView.setLogo("https://img.iplaysoft.com/wp-content/uploads/2019/free-images/free_stock_photo.jpg")
-        }
+        loadingView.setLogo("https://up.enterdesk.com/edpic_360_360/27/8f/93/278f938be4b460a57962d542eee989f6.jpg")
+
     }
 }

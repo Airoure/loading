@@ -8,8 +8,11 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
-import coil.imageLoader
-import coil.request.ImageRequest
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -213,13 +216,33 @@ class LoadingView2 : View {
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
     }
 
-    suspend fun setLogo(url: String) {
-        val request = ImageRequest.Builder(context)
-            .data(url)
-            .build()
-        val imageLoader = context.imageLoader
-        val drawable = imageLoader.execute(request).drawable
-        setLogo(drawable!!)
+    fun setLogo(url: String) {
+        Glide.with(context)
+            .asBitmap()
+            .load(url)
+            .listener(object : RequestListener<Bitmap> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Bitmap?,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    setLogo(resource!!)
+                    return false
+                }
+
+            })
+            .submit(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
     }
 
     fun setState(state: String) {
