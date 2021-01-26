@@ -191,11 +191,6 @@ class LoadingView : View {
         )
     }
 
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        mBitmap.recycle()
-    }
-
     fun setProgress(progress: Int) {
         if (progress in 0..100) {
             this.targetProgress = progress
@@ -352,10 +347,10 @@ class LoadingView : View {
                 mPicPaint.alpha = 255
             }
             drawLines(canvas)
-            setCenterMatrix(mMatrix, mBitmap, mOuterRadius)
+            setCenterMatrix(mMatrix, mBitmap, mOuterRadius-dip2px(10))
             mShader.setLocalMatrix(mMatrix)
             mPicPaint.shader = mShader
-            canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mPicPaint)
+            canvas.drawCircle(mCircleX, mCircleY, mOuterRadius-dip2px(10), mPicPaint)
             roteAngle += colorCircleRotate
             canvas.rotate(roteAngle, mCircleX, mCircleY)
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mColorCirclePaint)
