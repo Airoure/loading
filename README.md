@@ -6,7 +6,7 @@
 ## 使用方法
 #### 1.在build.gradle中添加依赖
 ```
-implementation 'com.zjl.loading:library:1.0.9'
+implementation 'com.zjl.loading:library:1.0.10'
 ```
 #### 2.在xml布局中添加组件
 ```
