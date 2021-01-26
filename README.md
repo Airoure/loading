@@ -15,7 +15,8 @@ implementation 'com.zjl.loading:library:1.0.10'
     android:layout_height="wrap_content"/>
 ```
 #### 3.设置加载成功图
-通过xml中的```app:img```或者在代码中调用```setLogo```方法可以设置加载成功图。
+通过xml中的```app:img```或者在代码中调用```setLogo```方法可以设置加载成功图，```setLogo```中参数可以为```bitmap```,```drawable```以及```url```，使用url加载的方法是一个```suspend```方法，
+使用```Coil```通过加载网络图片。
 #### 4.设置错误状态图
 通过xml中的```app:error_img```可以设置错误状态图。
 #### 5.设置进度

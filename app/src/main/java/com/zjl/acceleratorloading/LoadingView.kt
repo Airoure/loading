@@ -8,6 +8,8 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import coil.imageLoader
+import coil.request.ImageRequest
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -203,13 +205,21 @@ class LoadingView2 : View {
 
     fun setLogo(logo: Drawable) {
         this.pic = logo
-        mBitmap = pic!!.toBitmap()
-        mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
+        setLogo(pic!!.toBitmap())
     }
 
     fun setLogo(logo: Bitmap) {
         mBitmap = logo
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+    }
+
+    suspend fun setLogo(url: String) {
+        val request = ImageRequest.Builder(context)
+            .data(url)
+            .build()
+        val imageLoader = context.imageLoader
+        val drawable = imageLoader.execute(request).drawable
+        setLogo(drawable!!)
     }
 
     fun setState(state: String) {

@@ -1,11 +1,14 @@
 package com.zjl.acceleratorloading
 
+
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.zjl.loading.LoadingView
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,11 +47,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         })
-        Thread {
-            while (true) {
-                Log.e("MainActivity", "${loadingView.getProgress()}")
-                Thread.sleep(50)
-            }
-        }.start()
+        GlobalScope.launch {
+            loadingView.setLogo("https://img.iplaysoft.com/wp-content/uploads/2019/free-images/free_stock_photo.jpg")
+        }
     }
 }
