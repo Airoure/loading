@@ -197,6 +197,10 @@ class LoadingView : View {
         }
     }
 
+    fun getProgress(): Int {
+        return targetProgress
+    }
+
     fun setLogo(logo: Drawable) {
         this.pic = logo
         mBitmap = pic!!.toBitmap()
