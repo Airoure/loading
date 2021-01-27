@@ -1,5 +1,6 @@
 package com.zjl.loading
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
@@ -13,6 +14,8 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.zjl.loading.DensityUtil.dip2px
+import com.zjl.loading.DensityUtil.sp2px
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -88,7 +91,8 @@ class LoadingView : View {
         mMaskPic = ContextCompat.getDrawable(context, R.drawable.img_mask)
         mMaskBitmap = mMaskPic!!.toBitmap()
         mMaskShader = BitmapShader(mMaskBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        progressTextSize = typeArrays.getDimension(R.styleable.LoadingView_progress_size, sp2px(64))
+        progressTextSize =
+            typeArrays.getDimension(R.styleable.LoadingView_progress_size, sp2px(context, 64f))
         typeArrays.recycle()
         mBitmap = pic!!.toBitmap()
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
@@ -143,6 +147,7 @@ class LoadingView : View {
         invalidate()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (inCircle(event!!.x, event.y) && !isLoading && !isError) {
             onClickListener?.onClick()
@@ -273,11 +278,11 @@ class LoadingView : View {
     }
 
     private fun initParam() {
-        mOuterRadius = dip2px(115)
+        mOuterRadius = dip2px(context, 115f)
         mCircleX = 0f
         mCircleY = 0f
-        mInnerRadius = dip2px(100)
-        mLineLength = dip2px(15)
+        mInnerRadius = dip2px(context, 100f)
+        mLineLength = dip2px(context, 15f)
         mLinearGradient = LinearGradient(
             mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
             intArrayOf(
@@ -347,10 +352,10 @@ class LoadingView : View {
                 mPicPaint.alpha = 255
             }
             drawLines(canvas)
-            setCenterMatrix(mMatrix, mBitmap, mOuterRadius-dip2px(10))
+            setCenterMatrix(mMatrix, mBitmap, mOuterRadius - dip2px(context, 10f))
             mShader.setLocalMatrix(mMatrix)
             mPicPaint.shader = mShader
-            canvas.drawCircle(mCircleX, mCircleY, mOuterRadius-dip2px(10), mPicPaint)
+            canvas.drawCircle(mCircleX, mCircleY, mOuterRadius - dip2px(context, 10f), mPicPaint)
             roteAngle += colorCircleRotate
             canvas.rotate(roteAngle, mCircleX, mCircleY)
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mColorCirclePaint)
@@ -418,22 +423,22 @@ class LoadingView : View {
         drawScaleLine(canvas)
         outRoteAngle += colorLineRotate
         canvas.rotate(-outRoteAngle, mCircleX, mCircleY)
-        setCenterMatrix(maskMatrix, mMaskBitmap!!, dip2px(153))
+        setCenterMatrix(maskMatrix, mMaskBitmap!!, dip2px(context, 153f))
         mMaskShader!!.setLocalMatrix(maskMatrix)
         mMaskPaint.shader = mMaskShader
         mMaskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
-        canvas.drawCircle(mCircleX, mCircleY, dip2px(153), mMaskPaint)
+        canvas.drawCircle(mCircleX, mCircleY, dip2px(context, 153f), mMaskPaint)
         canvas.restoreToCount(layer)
     }
 
     private fun drawScaleLine(canvas: Canvas) {
-        mICPaint.strokeWidth = dip2px(2)
+        mICPaint.strokeWidth = dip2px(context, 2f)
         for (i in 0..359 step 2) {
             canvas.drawLine(
                 mCircleX,
-                dip2px(130),
+                dip2px(context, 130f),
                 mCircleX,
-                dip2px(145),
+                dip2px(context, 145f),
                 mICPaint
             )
             canvas.rotate(2f, mCircleX, mCircleY)
@@ -444,14 +449,14 @@ class LoadingView : View {
         mOCPaint.apply {
             color = Color.parseColor("#282D45")
             style = Paint.Style.STROKE
-            strokeWidth = dip2px(14)
+            strokeWidth = dip2px(context, 14f)
             isAntiAlias = true
             alpha = 255
         }
         mICPaint.apply {
             color = Color.parseColor("#282D45")
             style = Paint.Style.STROKE
-            strokeWidth = dip2px(1)
+            strokeWidth = dip2px(context, 1f)
             isAntiAlias = true
             alpha = 255
         }
@@ -472,7 +477,7 @@ class LoadingView : View {
         }
         mArcPaint.apply {
             shader = mLinearGradient
-            strokeWidth = dip2px(14)
+            strokeWidth = dip2px(context, 14f)
             style = Paint.Style.STROKE
             isAntiAlias = true
             strokeCap = Paint.Cap.ROUND
@@ -480,21 +485,12 @@ class LoadingView : View {
         }
         mColorCirclePaint.apply {
             shader = mLinearGradient2
-            strokeWidth = dip2px(14)
+            strokeWidth = dip2px(context, 14f)
             style = Paint.Style.STROKE
             isAntiAlias = true
             alpha = 255
         }
-    }
-
-    private fun dip2px(dipValue: Int): Float {
-        val scale = context.resources.displayMetrics.density
-        return dipValue * scale
-    }
-
-    private fun sp2px(spValue: Int): Float {
-        val fontScale = context.resources.displayMetrics.scaledDensity
-        return spValue * fontScale
+        mPicPaint.isAntiAlias = true
     }
 
     object State {

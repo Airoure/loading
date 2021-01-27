@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-        loadingView.setOnClickListener(LoadingView2.OnClickListener {
+        loadingView.setOnClickListener(LoadingView.OnClickListener {
             Toast.makeText(
                 this@MainActivity,
                 "点击",
