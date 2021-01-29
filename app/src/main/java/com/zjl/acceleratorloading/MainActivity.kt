@@ -21,20 +21,16 @@ class MainActivity : AppCompatActivity() {
         btnIncrease.setOnClickListener {
             process += 10
             loadingView.setProgress(process)
-            Toast.makeText(this, "${loadingView.getProgress()}", Toast.LENGTH_SHORT).show()
 
         }
         btnLoading.setOnClickListener {
             loadingView.setState(LoadingView.State.LOADING)
-            Toast.makeText(this, "${loadingView.getProgress()}", Toast.LENGTH_SHORT).show()
         }
         btnError.setOnClickListener {
             loadingView.setState(LoadingView.State.ERROR)
-            Toast.makeText(this, "${loadingView.getProgress()}", Toast.LENGTH_SHORT).show()
         }
         btnComplete.setOnClickListener {
             loadingView.setState(LoadingView.State.COMPLETE)
-            Toast.makeText(this, "${loadingView.getProgress()}", Toast.LENGTH_SHORT).show()
         }
         loadingView.setOnCompleteListener {
             Toast.makeText(
@@ -49,9 +45,9 @@ class MainActivity : AppCompatActivity() {
                 "点击",
                 Toast.LENGTH_SHORT
             ).show()
-            Toast.makeText(this, "${loadingView.getProgress()}", Toast.LENGTH_SHORT).show()
         })
         //loadingView.setLogo("https://up.enterdesk.com/edpic_360_360/27/8f/93/278f938be4b460a57962d542eee989f6.jpg")
 
     }
 }
+

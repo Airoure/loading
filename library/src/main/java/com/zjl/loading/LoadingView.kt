@@ -29,6 +29,7 @@ class LoadingView : View {
     private val mArcPaint: Paint = Paint()
     private val mColorCirclePaint: Paint = Paint()
     private val mMaskPaint: Paint = Paint()
+    private val mSpeedPaint: Paint = Paint()
     private val mErrorPaint: Paint = Paint()
     private var mOuterRadius = 0f
     private var mCircleX = 0f
@@ -43,20 +44,23 @@ class LoadingView : View {
     private var alphaStep3 = 0
     private var roteAngle = 0f
     private var outRoteAngle = 0f
-    private val intervalTime = 17
-    private val arcSpeed = 4.0f
+    private val arcSpeed = 2.0f
     private val disappearSpeed = 15
     private val appearSpeed = 15
-    private val colorCircleRotate = 4.0f
-    private val colorLineRotate = 2f
+    private val colorCircleRotate = 2.0f
+    private val colorLineRotate = 1f
     private val mMatrix = Matrix()
     private val maskMatrix = Matrix()
+    private val mSpeedMatrix = Matrix()
     private val errorMatrix = Matrix()
     private lateinit var mBitmap: Bitmap
     private lateinit var mShader: BitmapShader
     private var mMaskPic: Drawable? = null
     private var mMaskBitmap: Bitmap? = null
     private var mMaskShader: BitmapShader? = null
+    private var mSpeedPic: Drawable? = null
+    private var mSpeedBitmap: Bitmap? = null
+    private var mSpeedShader: BitmapShader? = null
     private lateinit var errorBitmap: Bitmap
     private lateinit var errorShader: BitmapShader
     private lateinit var mLinearGradient: LinearGradient
@@ -69,8 +73,6 @@ class LoadingView : View {
     private var onClickListener: OnClickListener? = null
     private var startTime = 0L
     private var endTime = 0L
-    private var usedTime = 0L
-
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -94,6 +96,9 @@ class LoadingView : View {
         mMaskPic = ContextCompat.getDrawable(context, R.drawable.img_mask)
         mMaskBitmap = mMaskPic!!.toBitmap()
         mMaskShader = BitmapShader(mMaskBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        mSpeedPic = ContextCompat.getDrawable(context, R.drawable.img_speed)
+        mSpeedBitmap = mSpeedPic!!.toBitmap()
+        mSpeedShader = BitmapShader(mSpeedBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         progressTextSize =
             typeArrays.getDimension(
                 R.styleable.LoadingView_progress_size,
@@ -130,14 +135,22 @@ class LoadingView : View {
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         initParam()
+        setCenterMatrix(mMatrix, mBitmap, mOuterRadius - DensityUtil.dip2px(context, 10f))
+        setCenterMatrix(maskMatrix, mMaskBitmap!!, DensityUtil.dip2px(context, 153f))
+        setCenterMatrix(mSpeedMatrix, mMaskBitmap!!, DensityUtil.dip2px(context, 153f))
+        mMaskShader!!.setLocalMatrix(maskMatrix)
+        mMaskPaint.shader = mMaskShader
+        mSpeedShader!!.setLocalMatrix(mSpeedMatrix)
+        mSpeedPaint.shader = mSpeedShader
+        mShader.setLocalMatrix(mMatrix)
 
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
+    override fun onDraw(canvas: Canvas) {
         startTime = System.currentTimeMillis()
+        super.onDraw(canvas)
         initPaint()
-        canvas!!.translate((width / 2).toFloat(), (height / 2).toFloat())
+        canvas.translate((width / 2).toFloat(), (height / 2).toFloat())
         drawCircles(canvas)
         if (!isError) {
             if (!isLoading) {
@@ -151,7 +164,8 @@ class LoadingView : View {
             drawError(canvas)
         }
         updateProgress()
-        postDelayed({ postInvalidate() }, intervalTime - usedTime)
+        endTime = System.currentTimeMillis()
+        invalidate()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -366,8 +380,6 @@ class LoadingView : View {
                 mPicPaint.alpha = 255
             }
             drawLines(canvas)
-            setCenterMatrix(mMatrix, mBitmap, mOuterRadius - DensityUtil.dip2px(context, 10f))
-            mShader.setLocalMatrix(mMatrix)
             mPicPaint.shader = mShader
             canvas.drawCircle(
                 mCircleX,
@@ -442,26 +454,12 @@ class LoadingView : View {
         drawScaleLine(canvas)
         outRoteAngle += colorLineRotate
         canvas.rotate(-outRoteAngle, mCircleX, mCircleY)
-        setCenterMatrix(maskMatrix, mMaskBitmap!!, DensityUtil.dip2px(context, 153f))
-        mMaskShader!!.setLocalMatrix(maskMatrix)
-        mMaskPaint.shader = mMaskShader
-        mMaskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
         canvas.drawCircle(mCircleX, mCircleY, DensityUtil.dip2px(context, 153f), mMaskPaint)
         canvas.restoreToCount(layer)
     }
 
     private fun drawScaleLine(canvas: Canvas) {
-        mICPaint.strokeWidth = DensityUtil.dip2px(context, 2f)
-        for (i in 0..359 step 2) {
-            canvas.drawLine(
-                mCircleX,
-                DensityUtil.dip2px(context, 130f),
-                mCircleX,
-                DensityUtil.dip2px(context, 145f),
-                mICPaint
-            )
-            canvas.rotate(2f, mCircleX, mCircleY)
-        }
+        canvas.drawCircle(mCircleX, mCircleY, DensityUtil.dip2px(context, 145f), mSpeedPaint)
     }
 
     private fun initPaint() {
@@ -510,6 +508,8 @@ class LoadingView : View {
             alpha = 255
         }
         mPicPaint.isAntiAlias = true
+        mMaskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+
     }
 
     object State {
@@ -525,5 +525,4 @@ class LoadingView : View {
     fun interface OnClickListener {
         fun onClick()
     }
-
 }
