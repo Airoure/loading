@@ -14,13 +14,11 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.zjl.acceleratorloading.DensityUtil.dip2px
-import com.zjl.acceleratorloading.DensityUtil.sp2px
 import com.zjl.loading.R
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-
+@Suppress("unused")
 class LoadingView2 : View {
     private var targetProgress: Int = 0
     private var pic: Drawable? = null
@@ -46,11 +44,12 @@ class LoadingView2 : View {
     private var alphaStep3 = 0
     private var roteAngle = 0f
     private var outRoteAngle = 0f
-    private val arcSpeed = 1.0f
-    private val disappearSpeed = 5
-    private val appearSpeed = 5
-    private val colorCircleRotate = 0.5f
-    private val colorLineRotate = 0.5f
+    private val intervalTime = 17
+    private val arcSpeed = 4.0f
+    private val disappearSpeed = 15
+    private val appearSpeed = 15
+    private val colorCircleRotate = 4.0f
+    private val colorLineRotate = 2f
     private val mMatrix = Matrix()
     private val maskMatrix = Matrix()
     private val errorMatrix = Matrix()
@@ -66,9 +65,13 @@ class LoadingView2 : View {
     private var progressTextSize: Float = 0f
     private var errorImg: Drawable? = null
     private var isError = false
-    private var onComplete = false
+    private var isComplete = false
     private var listener: OnCompleteListener? = null
     private var onClickListener: OnClickListener? = null
+    private var startTime = 0L
+    private var endTime = 0L
+    private var usedTime = 0L
+
 
     constructor(context: Context) : this(context, null, 0)
 
@@ -93,7 +96,10 @@ class LoadingView2 : View {
         mMaskBitmap = mMaskPic!!.toBitmap()
         mMaskShader = BitmapShader(mMaskBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         progressTextSize =
-            typeArrays.getDimension(R.styleable.LoadingView_progress_size, sp2px(context, 64f))
+            typeArrays.getDimension(
+                R.styleable.LoadingView_progress_size,
+                DensityUtil.sp2px(context, 64f)
+            )
         typeArrays.recycle()
         mBitmap = pic!!.toBitmap()
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
@@ -130,6 +136,7 @@ class LoadingView2 : View {
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+        startTime = System.currentTimeMillis()
         initPaint()
         canvas!!.translate((width / 2).toFloat(), (height / 2).toFloat())
         drawCircles(canvas)
@@ -145,7 +152,7 @@ class LoadingView2 : View {
             drawError(canvas)
         }
         updateProgress()
-        invalidate()
+        postDelayed({ postInvalidate() }, intervalTime - usedTime)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -160,16 +167,16 @@ class LoadingView2 : View {
         (x - width / 2).pow(2) + (y - height / 2).pow(2) < mInnerRadius.pow(2)
 
     private fun updateProgress() {
-        if (progress == 100 && !onComplete) {
+        if (progress == 100 && !isComplete) {
             listener?.onComplete()
-            onComplete = true
+            isComplete = true
         }
         if (progress < targetProgress) {
             progress++
         } else if (targetProgress == 0) {
             progress = 0
             resetAlpha()
-            onComplete = false
+            isComplete = false
         }
         if (progress < 100) {
             isLoading = true
@@ -248,7 +255,14 @@ class LoadingView2 : View {
 
     fun setState(state: String) {
         when (state) {
-            State.LOADING -> isError = false
+            State.LOADING -> {
+                targetProgress = 0
+                progress = 0
+                isError = false
+                isLoading = true
+                alpha = 255
+                mMaskPaint.alpha = 255
+            }
             State.ERROR -> isError = true
             State.COMPLETE -> {
                 alpha = 0
@@ -279,11 +293,11 @@ class LoadingView2 : View {
     }
 
     private fun initParam() {
-        mOuterRadius = dip2px(context, 115f)
+        mOuterRadius = DensityUtil.dip2px(context, 115f)
         mCircleX = 0f
         mCircleY = 0f
-        mInnerRadius = dip2px(context, 100f)
-        mLineLength = dip2px(context, 15f)
+        mInnerRadius = DensityUtil.dip2px(context, 100f)
+        mLineLength = DensityUtil.dip2px(context, 15f)
         mLinearGradient = LinearGradient(
             mCircleX, mCircleY - mOuterRadius, mCircleX + mOuterRadius, mCircleY,
             intArrayOf(
@@ -353,10 +367,15 @@ class LoadingView2 : View {
                 mPicPaint.alpha = 255
             }
             drawLines(canvas)
-            setCenterMatrix(mMatrix, mBitmap, mOuterRadius - dip2px(context, 10f))
+            setCenterMatrix(mMatrix, mBitmap, mOuterRadius - DensityUtil.dip2px(context, 10f))
             mShader.setLocalMatrix(mMatrix)
             mPicPaint.shader = mShader
-            canvas.drawCircle(mCircleX, mCircleY, mOuterRadius - dip2px(context, 10f), mPicPaint)
+            canvas.drawCircle(
+                mCircleX,
+                mCircleY,
+                mOuterRadius - DensityUtil.dip2px(context, 10f),
+                mPicPaint
+            )
             roteAngle += colorCircleRotate
             canvas.rotate(roteAngle, mCircleX, mCircleY)
             canvas.drawCircle(mCircleX, mCircleY, mOuterRadius, mColorCirclePaint)
@@ -424,22 +443,22 @@ class LoadingView2 : View {
         drawScaleLine(canvas)
         outRoteAngle += colorLineRotate
         canvas.rotate(-outRoteAngle, mCircleX, mCircleY)
-        setCenterMatrix(maskMatrix, mMaskBitmap!!, dip2px(context, 153f))
+        setCenterMatrix(maskMatrix, mMaskBitmap!!, DensityUtil.dip2px(context, 153f))
         mMaskShader!!.setLocalMatrix(maskMatrix)
         mMaskPaint.shader = mMaskShader
         mMaskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
-        canvas.drawCircle(mCircleX, mCircleY, dip2px(context, 153f), mMaskPaint)
+        canvas.drawCircle(mCircleX, mCircleY, DensityUtil.dip2px(context, 153f), mMaskPaint)
         canvas.restoreToCount(layer)
     }
 
     private fun drawScaleLine(canvas: Canvas) {
-        mICPaint.strokeWidth = dip2px(context, 2f)
+        mICPaint.strokeWidth = DensityUtil.dip2px(context, 2f)
         for (i in 0..359 step 2) {
             canvas.drawLine(
                 mCircleX,
-                dip2px(context, 130f),
+                DensityUtil.dip2px(context, 130f),
                 mCircleX,
-                dip2px(context, 145f),
+                DensityUtil.dip2px(context, 145f),
                 mICPaint
             )
             canvas.rotate(2f, mCircleX, mCircleY)
@@ -450,14 +469,14 @@ class LoadingView2 : View {
         mOCPaint.apply {
             color = Color.parseColor("#282D45")
             style = Paint.Style.STROKE
-            strokeWidth = dip2px(context, 14f)
+            strokeWidth = DensityUtil.dip2px(context, 14f)
             isAntiAlias = true
             alpha = 255
         }
         mICPaint.apply {
             color = Color.parseColor("#282D45")
             style = Paint.Style.STROKE
-            strokeWidth = dip2px(context, 1f)
+            strokeWidth = DensityUtil.dip2px(context, 1f)
             isAntiAlias = true
             alpha = 255
         }
@@ -478,7 +497,7 @@ class LoadingView2 : View {
         }
         mArcPaint.apply {
             shader = mLinearGradient
-            strokeWidth = dip2px(context, 14f)
+            strokeWidth = DensityUtil.dip2px(context, 14f)
             style = Paint.Style.STROKE
             isAntiAlias = true
             strokeCap = Paint.Cap.ROUND
@@ -486,7 +505,7 @@ class LoadingView2 : View {
         }
         mColorCirclePaint.apply {
             shader = mLinearGradient2
-            strokeWidth = dip2px(context, 14f)
+            strokeWidth = DensityUtil.dip2px(context, 14f)
             style = Paint.Style.STROKE
             isAntiAlias = true
             alpha = 255
@@ -507,4 +526,5 @@ class LoadingView2 : View {
     fun interface OnClickListener {
         fun onClick()
     }
+
 }
