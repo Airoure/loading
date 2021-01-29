@@ -51,7 +51,7 @@ ext {
     name = 'library'                                                // 必须和library module的名字相同
     libraryDesc = 'A loading view Library'
     publishedGroupId = 'com.zjl.loading'                // 填写groupId， 一般是包名，比如：com.android.support
-    versionName = '1.1.8'                                               // 版本号，比如：22.2.1
+    versionName = '1.1.9'                                               // 版本号，比如：22.2.1
     websiteUrl = 'https://github.com/Airoure/loading'              // 可以填写github上的库地址.
     issueTrackerUrl = 'https://github.com/Airoure/loading/issues'  // 可以填写github库的issue地址.
     vcsUrl = 'https://github.com/Airoure/loading.git'              // 可以填写github上库的地址.
