@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
@@ -29,7 +30,6 @@ class LoadingView2 : View {
     private val mArcPaint: Paint = Paint()
     private val mColorCirclePaint: Paint = Paint()
     private val mMaskPaint: Paint = Paint()
-    private val mSpeedPaint: Paint = Paint()
     private val mErrorPaint: Paint = Paint()
     private var mOuterRadius = 0f
     private var mCircleX = 0f
@@ -51,16 +51,12 @@ class LoadingView2 : View {
     private val colorLineRotate = 1f
     private val mMatrix = Matrix()
     private val maskMatrix = Matrix()
-    private val mSpeedMatrix = Matrix()
     private val errorMatrix = Matrix()
     private lateinit var mBitmap: Bitmap
     private lateinit var mShader: BitmapShader
     private var mMaskPic: Drawable? = null
     private var mMaskBitmap: Bitmap? = null
     private var mMaskShader: BitmapShader? = null
-    private var mSpeedPic: Drawable? = null
-    private var mSpeedBitmap: Bitmap? = null
-    private var mSpeedShader: BitmapShader? = null
     private lateinit var errorBitmap: Bitmap
     private lateinit var errorShader: BitmapShader
     private lateinit var mLinearGradient: LinearGradient
@@ -87,7 +83,6 @@ class LoadingView2 : View {
         const val PROGRESS_TEXT_SIZE = 64f
         const val COMPLETE_PIC_RADIUS_OFFSET = 10f
         const val MASK_PIC_RADIUS = 153f
-        const val ARC_ANGLE = 90f
     }
 
     constructor(context: Context) : this(context, null, 0)
@@ -103,19 +98,13 @@ class LoadingView2 : View {
         initParam()
         val typeArrays = context.obtainStyledAttributes(attributeSet, R.styleable.LoadingView)
         pic = typeArrays.getDrawable(R.styleable.LoadingView_img)
-        if (pic == null) {
-            pic = ContextCompat.getDrawable(context, R.drawable.test)
-        }
         errorImg = typeArrays.getDrawable(R.styleable.LoadingView_error_img)
         if (errorImg == null) {
             errorImg = ContextCompat.getDrawable(context, R.drawable.img_error)
         }
         mMaskPic = ContextCompat.getDrawable(context, R.drawable.img_mask)
         mMaskBitmap = mMaskPic!!.toBitmap()
-        mMaskShader = BitmapShader(mMaskBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        mSpeedPic = ContextCompat.getDrawable(context, R.drawable.img_speed)
-        mSpeedBitmap = mSpeedPic!!.toBitmap()
-        mSpeedShader = BitmapShader(mSpeedBitmap!!, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        mMaskShader = BitmapShader(mMaskBitmap!!, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
         progressTextSize =
             typeArrays.getDimension(
                 R.styleable.LoadingView_progress_size,
@@ -128,13 +117,11 @@ class LoadingView2 : View {
         errorShader = BitmapShader(errorBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
         setCenterMatrix(mMatrix, mBitmap, mOuterRadius - DensityUtil.dip2px(context, COMPLETE_PIC_RADIUS_OFFSET))
         setCenterMatrix(maskMatrix, mMaskBitmap!!, DensityUtil.dip2px(context, MASK_PIC_RADIUS))
-        setCenterMatrix(mSpeedMatrix, mMaskBitmap!!, DensityUtil.dip2px(context, MASK_PIC_RADIUS))
         mMaskShader!!.setLocalMatrix(maskMatrix)
         mMaskPaint.shader = mMaskShader
-        mSpeedShader!!.setLocalMatrix(mSpeedMatrix)
-        mSpeedPaint.shader = mSpeedShader
         mShader.setLocalMatrix(mMatrix)
         initPaint()
+        //this.setLayerType(View.LAYER_TYPE_SOFTWARE,null)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -160,21 +147,23 @@ class LoadingView2 : View {
 
     override fun onDraw(canvas: Canvas) {
         canvas.translate((width / 2).toFloat(), (height / 2).toFloat())
-        drawCircles(canvas)
         if (isError) {
+            drawCircles(canvas)
             drawError(canvas)
         } else {
             if (!isLoading) {
                 hideAndShow(canvas)
             } else {
                 drawLines(canvas)
-                drawText(canvas)
+                drawCircles(canvas)
                 drawMovingArc(canvas)
+                drawText(canvas)
             }
         }
         if(needRefresh){
             updateProgressAndState()
             invalidate()
+            //postInvalidateDelayed(17-(endTime-startTime))
         }
     }
 
@@ -193,6 +182,7 @@ class LoadingView2 : View {
         if (progress == 100 && !isComplete) {
             listener?.onComplete()
             isComplete = true
+            isLoading = false
         }
         if (progress < targetProgress) {
             progress++
@@ -284,9 +274,17 @@ class LoadingView2 : View {
                 isError = false
                 isLoading = true
                 alpha = 255
+                mTextPaint.alpha = alpha
+                mSmallTextPaint.alpha = alpha
+                mArcPaint.alpha = alpha
+                mMaskPaint.alpha = alpha
                 mMaskPaint.alpha = 255
+                if (!needRefresh) {
+                    invalidate()
+
+                }
                 needRefresh = true
-                invalidate()
+
             }
             State.ERROR -> {
                 isError = true
@@ -296,8 +294,10 @@ class LoadingView2 : View {
                 unResetAlpha()
                 progress = 100
                 targetProgress = 100
+                if(!needRefresh){
+                    invalidate()
+                }
                 needRefresh = true
-                invalidate()
             }
         }
     }
@@ -315,6 +315,9 @@ class LoadingView2 : View {
         alphaStep1 = 0
         alphaStep2 = 0
         alphaStep3 = 0
+        mArcPaint.alpha = 255
+        mTextPaint.alpha = 255
+        mSmallTextPaint.alpha = 255
         isLoading = true
     }
 
@@ -354,18 +357,20 @@ class LoadingView2 : View {
     }
 
     private fun drawMovingArc(canvas: Canvas) {
+        canvas.save()
         roteAngle += arcSpeed
-        canvas.rotate(roteAngle, mCircleX, mCircleY)
+        canvas.rotate(roteAngle%360, mCircleX, mCircleY)
         canvas.drawArc(
             mCircleX - mOuterRadius,
             mCircleY - mOuterRadius,
             mCircleX + mOuterRadius,
             mCircleY + mOuterRadius,
             180f,
-            180f+ ARC_ANGLE,
+            270f,
             false,
             mArcPaint
         )
+        canvas.restore()
     }
 
     private fun hideAndShow(canvas: Canvas) {
@@ -376,6 +381,7 @@ class LoadingView2 : View {
             mArcPaint.alpha = alpha
             mMaskPaint.alpha = alpha
             drawLines(canvas)
+            drawCircles(canvas)
             drawText(canvas)
             drawMovingArc(canvas)
         } else {
@@ -416,12 +422,22 @@ class LoadingView2 : View {
         val scale: Float
         var dx = 0
         var dy = 0
-        if (aBitmap.width * aRadius * 2 > aBitmap.height * aRadius * 2) {
-            scale = aRadius * 2.0f / aBitmap.width
-            dy = ((aRadius * 2.0f - aBitmap.height * scale) * 0.5).toInt()
-        } else {
-            scale = aRadius * 2.0f / aBitmap.height
-            dx = ((aRadius * 2.0f - aBitmap.width * scale) * 0.5).toInt()
+        if(aBitmap.width>=aRadius*2||aBitmap.height>=aRadius*2){
+            if (aBitmap.width * aRadius * 2 > aBitmap.height * aRadius * 2) {
+                scale = aRadius * 2.0f / aBitmap.width
+                dy = ((aRadius * 2.0f - aBitmap.height * scale) * 0.5).toInt()
+            } else {
+                scale = aRadius * 2.0f / aBitmap.height
+                dx = ((aRadius * 2.0f - aBitmap.width * scale) * 0.5).toInt()
+            }
+        }else{
+            if(aBitmap.width>=aBitmap.height){
+                scale = aRadius * 2.0f / aBitmap.width
+                dy = ((aRadius * 2.0f - aBitmap.height * scale) * 0.5).toInt()
+            }else{
+                scale = aRadius*2.0f / aBitmap.height
+                dx = ((aRadius * 2.0f - aBitmap.width * scale) * 0.5).toInt()
+            }
         }
         aMatrix.setScale(scale, scale)
         aMatrix.postTranslate(dx + mCircleX - aRadius, dy + mCircleY - aRadius)
@@ -463,22 +479,36 @@ class LoadingView2 : View {
     }
 
     private fun drawLines(canvas: Canvas) {
-        val layer = canvas.saveLayer(
-            mCircleX - width / 2,
-            mCircleY - height / 2,
-            mCircleX + width,
-            mCircleY + height,
-            null
-        )
+//        val layer = canvas.saveLayer(
+//            mCircleX - width / 2,
+//            mCircleY - height / 2,
+//            mCircleX + width /2,
+//            mCircleY + height /2,
+//            null
+//        )
+        canvas.save()
+        setLayerType(View.LAYER_TYPE_HARDWARE,null)
         drawScaleLine(canvas)
         outRoteAngle += colorLineRotate
         canvas.rotate(-outRoteAngle, mCircleX, mCircleY)
         canvas.drawCircle(mCircleX, mCircleY, maskPicRadius, mMaskPaint)
-        canvas.restoreToCount(layer)
+        canvas.restore()
+//        canvas.restoreToCount(layer)
     }
 
     private fun drawScaleLine(canvas: Canvas) {
-        canvas.drawCircle(mCircleX, mCircleY, maskPicRadius, mSpeedPaint)
+        //canvas.drawCircle(mCircleX, mCircleY, maskPicRadius, mSpeedPaint)
+        mICPaint.strokeWidth = DensityUtil.dip2px(context, 2f)
+        for (i in 0..359 step 3) {
+            canvas.drawLine(
+                mCircleX,
+                DensityUtil.dip2px(context, 130f),
+                mCircleX,
+                DensityUtil.dip2px(context, 145f),
+                mICPaint
+            )
+            canvas.rotate(3f, mCircleX, mCircleY)
+        }
     }
 
     private fun initPaint() {

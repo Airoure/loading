@@ -6,12 +6,11 @@
     android:layout_height="match_parent"
     android:background="#1B1C2A"
     tools:context="com.zjl.acceleratorloading.MainActivity">
-    <com.zjl.loading.LoadingView
+    <com.zjl.acceleratorloading.LoadingView2
         android:id="@+id/loadingView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:img="@drawable/test"
-        app:error_img="@drawable/img_error"
+        app:img="@drawable/test4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
