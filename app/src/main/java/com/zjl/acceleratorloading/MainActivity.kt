@@ -39,14 +39,14 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-        loadingView.setOnClickListener(LoadingView2.OnClickListener {
+        loadingView.setOnClickListener(LoadingView.OnClickListener {
             Toast.makeText(
                 this@MainActivity,
                 "点击",
                 Toast.LENGTH_SHORT
             ).show()
         })
-        //loadingView.setLogo("https://up.enterdesk.com/edpic_360_360/27/8f/93/278f938be4b460a57962d542eee989f6.jpg")
+        loadingView.setLogo("http://res.sumeow.com/pic/2021/01/30/570/7102420b62aa11ebaee85254007aeec4.png")
 
     }
 }

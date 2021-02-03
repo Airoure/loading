@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -70,7 +71,7 @@ class LoadingView : View {
     private val completeRadiusOffset = DensityUtil.dip2px(context, COMPLETE_PIC_RADIUS_OFFSET)
     private val maskPicRadius = DensityUtil.dip2px(context, MASK_PIC_RADIUS)
 
-    companion object{
+    companion object {
         const val DEFAULT_WIDTH = 230
         const val DEFAULT_HEIGHT = 230
         const val DEFAULT_OUTER_RADIUS = 115f
@@ -114,7 +115,11 @@ class LoadingView : View {
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
         errorBitmap = errorImg!!.toBitmap()
         errorShader = BitmapShader(errorBitmap, Shader.TileMode.REPEAT, Shader.TileMode.CLAMP)
-        setCenterMatrix(mMatrix, mBitmap, mOuterRadius - DensityUtil.dip2px(context, COMPLETE_PIC_RADIUS_OFFSET))
+        setCenterMatrix(
+            mMatrix,
+            mBitmap,
+            mOuterRadius - DensityUtil.dip2px(context, COMPLETE_PIC_RADIUS_OFFSET)
+        )
         setCenterMatrix(maskMatrix, mMaskBitmap!!, DensityUtil.dip2px(context, MASK_PIC_RADIUS))
         mMaskShader!!.setLocalMatrix(maskMatrix)
         mMaskPaint.shader = mMaskShader
@@ -159,7 +164,7 @@ class LoadingView : View {
                 drawText(canvas)
             }
         }
-        if(needRefresh){
+        if (needRefresh) {
             updateProgressAndState()
             invalidate()
             //postInvalidateDelayed(17-(endTime-startTime))
@@ -234,6 +239,12 @@ class LoadingView : View {
     fun setLogo(logo: Bitmap) {
         mBitmap = logo
         mShader = BitmapShader(mBitmap, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT)
+        setCenterMatrix(
+            mMatrix,
+            mBitmap,
+            mOuterRadius - DensityUtil.dip2px(context, COMPLETE_PIC_RADIUS_OFFSET)
+        )
+        mShader.setLocalMatrix(mMatrix)
     }
 
     fun setLogo(url: String) {
@@ -247,6 +258,7 @@ class LoadingView : View {
                     target: Target<Bitmap>?,
                     isFirstResource: Boolean
                 ): Boolean {
+                    Log.e("loading-Glide",e.toString())
                     return false
                 }
 
@@ -293,7 +305,7 @@ class LoadingView : View {
                 unResetAlpha()
                 progress = 100
                 targetProgress = 100
-                if(!needRefresh){
+                if (!needRefresh) {
                     invalidate()
                 }
                 needRefresh = true
@@ -358,7 +370,7 @@ class LoadingView : View {
     private fun drawMovingArc(canvas: Canvas) {
         canvas.save()
         roteAngle += arcSpeed
-        canvas.rotate(roteAngle%360, mCircleX, mCircleY)
+        canvas.rotate(roteAngle % 360, mCircleX, mCircleY)
         canvas.drawArc(
             mCircleX - mOuterRadius,
             mCircleY - mOuterRadius,
@@ -418,27 +430,16 @@ class LoadingView : View {
     }
 
     private fun setCenterMatrix(aMatrix: Matrix, aBitmap: Bitmap, aRadius: Float) {
-        val scale: Float
         var dx = 0
         var dy = 0
-        if(aBitmap.width>=aRadius*2||aBitmap.height>=aRadius*2){
-            if (aBitmap.width * aRadius * 2 > aBitmap.height * aRadius * 2) {
-                scale = aRadius * 2.0f / aBitmap.width
-                dy = ((aRadius * 2.0f - aBitmap.height * scale) * 0.5).toInt()
-            } else {
-                scale = aRadius * 2.0f / aBitmap.height
-                dx = ((aRadius * 2.0f - aBitmap.width * scale) * 0.5).toInt()
-            }
-        }else{
-            if(aBitmap.width>=aBitmap.height){
-                scale = aRadius * 2.0f / aBitmap.width
-                dy = ((aRadius * 2.0f - aBitmap.height * scale) * 0.5).toInt()
-            }else{
-                scale = aRadius*2.0f / aBitmap.height
-                dx = ((aRadius * 2.0f - aBitmap.width * scale) * 0.5).toInt()
-            }
+        val scaleY: Float = aRadius * 2.0f / aBitmap.height
+        val scaleX: Float = aRadius * 2.0f / aBitmap.width
+        if (aBitmap.width * aRadius * 2 > aBitmap.height * aRadius * 2) {
+            dy = (aRadius * 2.0f - aBitmap.height * scaleY).toInt()
+        } else {
+            dx = (aRadius * 2.0f - aBitmap.width * scaleX).toInt()
         }
-        aMatrix.setScale(scale, scale)
+        aMatrix.setScale(scaleX, scaleY)
         aMatrix.postTranslate(dx + mCircleX - aRadius, dy + mCircleY - aRadius)
     }
 
@@ -478,25 +479,16 @@ class LoadingView : View {
     }
 
     private fun drawLines(canvas: Canvas) {
-//        val layer = canvas.saveLayer(
-//            mCircleX - width / 2,
-//            mCircleY - height / 2,
-//            mCircleX + width /2,
-//            mCircleY + height /2,
-//            null
-//        )
         canvas.save()
-        setLayerType(View.LAYER_TYPE_HARDWARE,null)
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
         drawScaleLine(canvas)
         outRoteAngle += colorLineRotate
         canvas.rotate(-outRoteAngle, mCircleX, mCircleY)
         canvas.drawCircle(mCircleX, mCircleY, maskPicRadius, mMaskPaint)
         canvas.restore()
-//        canvas.restoreToCount(layer)
     }
 
     private fun drawScaleLine(canvas: Canvas) {
-        //canvas.drawCircle(mCircleX, mCircleY, maskPicRadius, mSpeedPaint)
         mICPaint.strokeWidth = DensityUtil.dip2px(context, 2f)
         for (i in 0..359 step 3) {
             canvas.drawLine(
