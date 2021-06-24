@@ -1,4 +1,4 @@
-package com.zjl.loading
+package com.zjl.acceleratorloading
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -15,6 +15,8 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.zjl.loading.DensityUtil
+import com.zjl.loading.R
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -72,17 +74,17 @@ class LoadingView : View {
     private val maskPicRadius = DensityUtil.dip2px(context, MASK_PIC_RADIUS)
 
     companion object {
-        const val DEFAULT_WIDTH = 230
-        const val DEFAULT_HEIGHT = 230
-        const val DEFAULT_OUTER_RADIUS = 115f
-        const val DEFAULT_INNER_RADIUS = 100f
+        const val DEFAULT_WIDTH = 260
+        const val DEFAULT_HEIGHT = 260
+        const val DEFAULT_OUTER_RADIUS = 96.45f
+        const val DEFAULT_INNER_RADIUS = 84f
         const val DEFAULT_LINE_LENGTH = 15f
         const val DEFAULT_OCPAINT_WIDTH = 14f
         const val DEFAULT_ICPAINT_WIDTH = 1f
         const val DEFAULT_COLORCIRCLE_WIDTH = 14f
         const val PROGRESS_TEXT_SIZE = 64f
         const val COMPLETE_PIC_RADIUS_OFFSET = 10f
-        const val MASK_PIC_RADIUS = 153f
+        const val MASK_PIC_RADIUS = 131.6f
     }
 
     constructor(context: Context) : this(context, null, 0)
@@ -493,9 +495,9 @@ class LoadingView : View {
         for (i in 0..359 step 3) {
             canvas.drawLine(
                 mCircleX,
-                DensityUtil.dip2px(context, 130f),
+                DensityUtil.dip2px(context, 109.06f),
                 mCircleX,
-                DensityUtil.dip2px(context, 145f),
+                DensityUtil.dip2px(context, 121.62f),
                 mICPaint
             )
             canvas.rotate(3f, mCircleX, mCircleY)
@@ -566,4 +568,3 @@ class LoadingView : View {
         fun onClick()
     }
 }
-

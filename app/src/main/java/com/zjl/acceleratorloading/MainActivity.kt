@@ -4,7 +4,6 @@ package com.zjl.acceleratorloading
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.zjl.loading.LoadingView
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -24,13 +23,13 @@ class MainActivity : AppCompatActivity() {
 
         }
         btnLoading.setOnClickListener {
-            loadingView.setState(LoadingView.State.LOADING)
+            loadingView.setState(LoadingView2.State.LOADING)
         }
         btnError.setOnClickListener {
-            loadingView.setState(LoadingView.State.ERROR)
+            loadingView.setState(LoadingView2.State.ERROR)
         }
         btnComplete.setOnClickListener {
-            loadingView.setState(LoadingView.State.COMPLETE)
+            loadingView.setState(LoadingView2.State.COMPLETE)
         }
         loadingView.setOnCompleteListener {
             Toast.makeText(
@@ -39,7 +38,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-        loadingView.setOnClickListener(LoadingView.OnClickListener {
+        loadingView.setOnClickListener(LoadingView2.OnClickListener {
             Toast.makeText(
                 this@MainActivity,
                 "点击",
