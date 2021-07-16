@@ -283,6 +283,7 @@ class LoadingView2 : View {
                 targetProgress = 0
                 progress = 0
                 isError = false
+                isComplete = false
                 isLoading = true
                 alpha = 255
                 mTextPaint.alpha = alpha
