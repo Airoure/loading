@@ -565,4 +565,8 @@ class LoadingView2 : View {
     fun interface OnClickListener {
         fun onClick()
     }
+
+    fun resetComplete() {
+        isComplete = false
+    }
 }
