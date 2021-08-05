@@ -15,6 +15,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.zjl.loading.R
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -22,6 +23,7 @@ import kotlin.math.sqrt
 class LoadingView2 : View {
     private var targetProgress: Int = 0
     private var pic: Drawable? = null
+    private var mLinePaint: Paint = Paint()
     private val mOCPaint: Paint = Paint()
     private val mICPaint: Paint = Paint()
     private val mTextPaint: Paint = Paint()
@@ -283,7 +285,6 @@ class LoadingView2 : View {
                 targetProgress = 0
                 progress = 0
                 isError = false
-                isComplete = false
                 isLoading = true
                 alpha = 255
                 mTextPaint.alpha = alpha
@@ -490,14 +491,14 @@ class LoadingView2 : View {
     }
 
     private fun drawScaleLine(canvas: Canvas) {
-        mICPaint.strokeWidth = DensityUtil.dip2px(context, 2f)
+        mLinePaint.strokeWidth = DensityUtil.dip2px(context, 2f)
         for (i in 0..359 step 3) {
             canvas.drawLine(
                 mCircleX,
                 DensityUtil.dip2px(context, 109.06f),
                 mCircleX,
                 DensityUtil.dip2px(context, 121.62f),
-                mICPaint
+                mLinePaint
             )
             canvas.rotate(3f, mCircleX, mCircleY)
         }
@@ -505,9 +506,15 @@ class LoadingView2 : View {
 
     private fun initPaint() {
         mOCPaint.apply {
-            color = Color.parseColor("#282D45")
+            color = Color.parseColor("#666666")
             style = Paint.Style.STROKE
             strokeWidth = DensityUtil.dip2px(context, DEFAULT_OCPAINT_WIDTH)
+            isAntiAlias = true
+            alpha = 144
+        }
+        mLinePaint.apply {
+            color = Color.parseColor("#4A4A4A")
+            style = Paint.Style.STROKE
             isAntiAlias = true
             alpha = 255
         }

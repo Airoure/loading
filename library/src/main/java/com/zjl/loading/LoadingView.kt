@@ -24,6 +24,7 @@ import kotlin.math.sqrt
 class LoadingView : View {
     private var targetProgress: Int = 0
     private var pic: Drawable? = null
+    private var mLinePaint: Paint = Paint()
     private val mOCPaint: Paint = Paint()
     private val mICPaint: Paint = Paint()
     private val mTextPaint: Paint = Paint()
@@ -491,14 +492,14 @@ class LoadingView : View {
     }
 
     private fun drawScaleLine(canvas: Canvas) {
-        mICPaint.strokeWidth = DensityUtil.dip2px(context, 2f)
+        mLinePaint.strokeWidth = DensityUtil.dip2px(context, 2f)
         for (i in 0..359 step 3) {
             canvas.drawLine(
                 mCircleX,
                 DensityUtil.dip2px(context, 109.06f),
                 mCircleX,
                 DensityUtil.dip2px(context, 121.62f),
-                mICPaint
+                mLinePaint
             )
             canvas.rotate(3f, mCircleX, mCircleY)
         }
@@ -506,11 +507,17 @@ class LoadingView : View {
 
     private fun initPaint() {
         mOCPaint.apply {
-            color = Color.parseColor("#282D45")
+            color = Color.parseColor("#666666")
             style = Paint.Style.STROKE
             strokeWidth = DensityUtil.dip2px(context, DEFAULT_OCPAINT_WIDTH)
             isAntiAlias = true
-            alpha = 255
+            alpha = 144
+        }
+        mLinePaint.apply {
+            color = Color.parseColor("#4A4A4A")
+            style = Paint.Style.STROKE
+            isAntiAlias = true
+            alpha = 144
         }
         mICPaint.apply {
             color = Color.parseColor("#282D45")
